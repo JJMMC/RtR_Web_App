@@ -71,3 +71,5 @@ def get_all_articles():
         return articles
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving articles: {str(e)}")
+    
+
