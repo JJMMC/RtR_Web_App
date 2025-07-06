@@ -5,6 +5,9 @@ from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import DeclarativeBase
+from typing import Optional
+from decimal import Decimal
+from datetime import date
 
 
 
@@ -23,9 +26,9 @@ class Articulo(Base):
     rtr_id: Mapped[int] = mapped_column(Integer, nullable=False, unique=True )  # Clave primaria correctamente definida
     categoria: Mapped[str] = mapped_column(String(100), nullable=False)
     nombre: Mapped[str] = mapped_column(String(255), nullable=False)
-    ean: Mapped[int] = mapped_column(Integer, nullable=True)
-    art_url: Mapped[str] = mapped_column(String(500), nullable=True)
-    img_url: Mapped[str] = mapped_column(String(500), nullable=True)
+    ean: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    art_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    img_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     
     # Relación con historial_precios
     historial: Mapped[list["HistorialPrecio"]] = relationship(back_populates="articulo")
@@ -36,8 +39,8 @@ class HistorialPrecio(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     rtr_id: Mapped[int] = mapped_column(Integer, ForeignKey("articulos.rtr_id"), nullable=False)
-    precio: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)  # 10 dígitos con 2 decimales
-    fecha: Mapped[str] = mapped_column(Date, nullable=False)
+    precio: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)  # 10 dígitos con 2 decimales
+    fecha: Mapped[date] = mapped_column(Date, nullable=False)
     
     # Relación con Articulos
     articulo: Mapped["Articulo"] = relationship(back_populates="historial")

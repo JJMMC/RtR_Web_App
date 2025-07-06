@@ -41,22 +41,15 @@ class ArticuloCRUD(CRUDOperations):
                 select(Articulo).where(Articulo.id == id)
             ).scalar_one_or_none()
    
-    def get_all(self):
-        """
-        Obtiene todos los artículos de la base de datos
-        """
+    def get_all(self) -> List[Articulo]:
+        """Obtener todos los artículos"""
         with self.get_session() as session:
-            if session is None:
-                print('No hay Session')
-        
             try:
                 return session.query(Articulo).all()
             except Exception as e:
-                print(f"Error al obtener todos los artículos: {e}")
-                return []
-            finally:
-                if session:
-                    session.close()
+                logger.error(f"Error getting all articles: {e}")
+                raise  # Propagar el error para que la capa API lo maneje
+        # Context manager se encarga del cierre automáticamente
 
 class HistorialCRUD(CRUDOperations):
     """Operaciones CRUD específicas para historial"""
