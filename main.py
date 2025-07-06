@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException
-import schemas as schemas
+import schemas
 from typing import List
 from database.crud_operations import articulo_crud
 from database.db_session import db_manager

@@ -1,12 +1,12 @@
-from scrap.schema_product import Product
+from scrap.schemas.schema_product import Product
 from bs4 import BeautifulSoup, Tag
 from datetime import datetime
-from config import main_url
-from soup_gen import soup_generator
+from scrap.utils.config import main_url
+from scrap.utils.soup_gen import soup_generator
 from pydantic import ValidationError
 from itertools import zip_longest
-from scrap_cat_urls import request_categorias_and_main_urls, find_child_urls
-from remove_duplicates import get_duplicate_stats, remove_duplicates_by_id
+from scrap.utils.scrap_cat_urls import request_categorias_and_main_urls, find_child_urls
+from scrap.utils.remove_duplicates import get_duplicate_stats, remove_duplicates_by_id
 
 # Para evitar todos los errores que da Pylance
 def extract_safe_data(soup, selector, attr_chain=None):

@@ -1,6 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-from config import headers, main_url
+from scrap.utils.config import headers, main_url
 
 url = main_url
 

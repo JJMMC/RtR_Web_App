@@ -1,8 +1,8 @@
 from bs4 import BeautifulSoup, Tag
 from datetime import datetime
-from config import main_url
-from soup_gen import soup_generator
-from scrap.schema_cat_url import ScrapCategoriaModel
+from scrap.utils.config import main_url
+from scrap.utils.soup_gen import soup_generator
+from scrap.schemas.schema_cat_url import ScrapCategoriaModel
 from pydantic import ValidationError
 
 ## OBTENIENDO URLS ##
