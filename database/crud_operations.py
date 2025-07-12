@@ -1,9 +1,10 @@
-from typing import List, Dict, Any, Optional
-from sqlalchemy import insert, select, and_
+from typing import List, Dict, Any, Optional, Sequence
+from sqlalchemy import insert, select, and_, update
 from .crud_base import CRUDOperations
 from .db_models import Articulo, HistorialPrecio
 from .db_session import db_manager
 import logging
+import schemas
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +27,33 @@ class ArticuloCRUD(CRUDOperations):
             session.commit()
             return len(products_list)
     
+    def update_one(self, article_id, updated_data: Dict[str, Any]):
+        with self.get_session() as session:
+            logger.info(f"Inserting article: {updated_data.get('nombre', 'Unknown')}")
+            # 1.- Verificar si existe
+            existing = session.execute(
+                select(Articulo).where(Articulo.id == article_id)
+            ).scalar_one_or_none()
+
+            if not existing:
+                raise Exception(f"Article with id {article_id} not found")
+
+            # 2.- Luego actualizar
+            session.execute(
+                update(Articulo)
+                .where(Articulo.id == article_id)
+                .values(updated_data)
+            )
+
+            # 3. COMMIT los cambios
+            session.commit()
+            
+            # 4. Obtener y retornar el objeto actualizado
+            updated_article = session.execute(
+                select(Articulo).where(Articulo.id == article_id)
+            ).scalar_one()
+            return updated_article    
+           
     def exists_by_rtr_id(self, rtr_id: int) -> bool:
         """Verificar si existe artículo por RTR ID"""
         with self.get_session() as session:
@@ -35,10 +63,17 @@ class ArticuloCRUD(CRUDOperations):
             return result is not None
     
     def get_by_id(self, id: int) -> Optional[Articulo]:
-        """Obtener artículo por RTR ID"""
+        """Obtener artículo por ID"""
         with self.get_session() as session:
             return session.execute(
                 select(Articulo).where(Articulo.id == id)
+            ).scalar_one_or_none()
+    
+    def get_by_rtr_id(self, rtr_id: int) -> Optional[Articulo]:
+        """Obtener artículo por RTR ID"""
+        with self.get_session() as session:
+            return session.execute(
+                select(Articulo).where(Articulo.rtr_id == rtr_id)
             ).scalar_one_or_none()
    
     def get_all(self) -> List[Articulo]:
@@ -50,6 +85,57 @@ class ArticuloCRUD(CRUDOperations):
                 logger.error(f"Error getting all articles: {e}")
                 raise  # Propagar el error para que la capa API lo maneje
         # Context manager se encarga del cierre automáticamente
+
+    def search(self, filters: Dict[str, Any], limit: int = 20) -> Sequence[Articulo]:
+        with self.get_session() as session:
+            
+            
+            # Lista para acumular condiciones
+            article_conditions = []
+            pricedate_conditions = []
+
+
+            if 'nombre' in filters:
+                article_conditions.append(Articulo.nombre.ilike(f"%{filters['nombre']}%"))
+            
+            if 'categoria' in filters:
+                article_conditions.append(Articulo.categoria.ilike(f"%{filters['categoria']}%"))
+            
+            if 'rtr_id' in filters:
+                article_conditions.append(Articulo.rtr_id == filters['rtr_id'])
+            
+            if 'ean' in filters:
+                article_conditions.append(Articulo.ean == filters['ean'])
+            
+            if 'max_price' in filters:
+                pricedate_conditions.append(HistorialPrecio.precio <= filters['max_price'])
+
+            if 'min_price' in filters:
+                pricedate_conditions.append(HistorialPrecio.precio >= filters['min_price'])
+
+            if 'max_date' in filters:
+                pricedate_conditions.append(HistorialPrecio.fecha <= filters['max_date'])
+
+            if 'min_date' in filters:
+                pricedate_conditions.append(HistorialPrecio.fecha >= filters['min_date'])
+
+
+            # Creamos el Query, Si no hay filtros de precio/fecha, evitar JOIN
+            if not pricedate_conditions:
+                query = select(Articulo)  
+                if article_conditions:
+                    query = query.where(and_(*article_conditions))
+            else:
+                # Creamos el query en funcíon de las condiciones junto con las de precio y fecha
+                query = select(Articulo).join(HistorialPrecio, HistorialPrecio.rtr_id == Articulo.rtr_id).distinct()
+                
+                # Aplicar TODAS las condiciones con AND
+                all_conditions = article_conditions + pricedate_conditions
+                if all_conditions:
+                    query = query.where(and_(*all_conditions))
+                
+            query = query.limit(limit)
+            return session.execute(query).scalars().all()
 
 class HistorialCRUD(CRUDOperations):
     """Operaciones CRUD específicas para historial"""

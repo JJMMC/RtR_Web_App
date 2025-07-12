@@ -58,6 +58,19 @@ class ArticuloFullData(ArticuloResponse):
     historial_precios: List[HistorialPrecioResponse] = Field(default_factory=list)
     model_config = ConfigDict(from_attributes=True)
 
+
+# Schema para filtros de búsqueda
+class ArticuloFilter(BaseModel):
+    id: Optional[str] = None
+    rtr_id: Optional[str] = None
+    ean: Optional[str] = None
+    categoria: Optional[str] = None
+    nombre: Optional[str] = None
+    precio_min: Optional[Decimal] = None
+    precio_max: Optional[Decimal] = None
+    fecha_desde: Optional[date] = None
+    fecha_hasta: Optional[date] = None
+
 # # Schema para estadísticas de precios (nuevo)
 # class PriceStats(BaseModel):
 #     precio_actual: Optional[Decimal] = None
