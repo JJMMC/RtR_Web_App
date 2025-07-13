@@ -1,5 +1,6 @@
 from typing import List, Dict, Any, Optional, Sequence
 from sqlalchemy import insert, select, and_, update
+from sqlalchemy.orm import joinedload
 from .crud_base import CRUDOperations
 from .db_models import Articulo, HistorialPrecio
 from .db_session import db_manager
@@ -92,6 +93,33 @@ class ArticuloCRUD(CRUDOperations):
             
             # Lista para acumular condiciones
             article_conditions = []
+
+
+            if 'nombre' in filters:
+                article_conditions.append(Articulo.nombre.ilike(f"%{filters['nombre']}%"))
+            
+            if 'categoria' in filters:
+                article_conditions.append(Articulo.categoria.ilike(f"%{filters['categoria']}%"))
+            
+            if 'rtr_id' in filters:
+                article_conditions.append(Articulo.rtr_id == filters['rtr_id'])
+            
+            if 'ean' in filters:
+                article_conditions.append(Articulo.ean == filters['ean'])
+
+            # Creamos el Query
+            query = select(Articulo)  
+            query = query.where(and_(*article_conditions))    
+            query = query.limit(limit)
+
+            return session.execute(query).scalars().all()
+
+    def search_with_history(self, filters: Dict[str, Any], limit: int = 20) -> Sequence[Articulo]:
+        with self.get_session() as session:
+            
+            
+            # Lista para acumular condiciones
+            article_conditions = []
             pricedate_conditions = []
 
 
@@ -120,22 +148,26 @@ class ArticuloCRUD(CRUDOperations):
                 pricedate_conditions.append(HistorialPrecio.fecha >= filters['min_date'])
 
 
-            # Creamos el Query, Si no hay filtros de precio/fecha, evitar JOIN
-            if not pricedate_conditions:
-                query = select(Articulo)  
-                if article_conditions:
-                    query = query.where(and_(*article_conditions))
-            else:
-                # Creamos el query en funcíon de las condiciones junto con las de precio y fecha
-                query = select(Articulo).join(HistorialPrecio, HistorialPrecio.rtr_id == Articulo.rtr_id).distinct()
+
+
+            # Como el endpoint ya valida que existen filtros de precio/fecha,
+            # siempre necesitaremos JOIN y eager loading
+            query = (select(Articulo)
+                    .options(joinedload(Articulo.historial))
+                    .join(HistorialPrecio, HistorialPrecio.rtr_id == Articulo.rtr_id)
+                    .distinct())
                 
-                # Aplicar TODAS las condiciones con AND
-                all_conditions = article_conditions + pricedate_conditions
-                if all_conditions:
-                    query = query.where(and_(*all_conditions))
-                
+            # Aplicar TODAS las condiciones con AND
+            all_conditions = article_conditions + pricedate_conditions
+            query = query.where(and_(*all_conditions))    
             query = query.limit(limit)
-            return session.execute(query).scalars().all()
+
+            return session.execute(query).scalars().unique().all()
+        
+    def get_all_categories(self):
+        with self.get_session() as session:
+            return session.execute(select(Articulo.categoria).distinct().where(Articulo.categoria.is_not(None))).scalars().all()
+
 
 class HistorialCRUD(CRUDOperations):
     """Operaciones CRUD específicas para historial"""

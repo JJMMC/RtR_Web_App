@@ -110,7 +110,6 @@ def create_article(article: schemas.ArticuloCreate):
         "img_url": product_data_rtned.img_url
     }
 
-
 @app.put("/articles/{article_id}", response_model=schemas.ArticuloResponse)
 def update_article(article_id: int, update_data: schemas.ArticuloUpdate):
     try:
@@ -128,9 +127,45 @@ def update_article(article_id: int, update_data: schemas.ArticuloUpdate):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error updating article: {str(e)}")
 
-
-@app.get('/articles/search', response_model=List[schemas.ArticuloFullData])
+@app.get('/articles/search', response_model=List[schemas.ArticuloResponse])
 def search_article(
+    nombre: str = Query(None, min_length=2, description="Product name"),
+    rtr_id: int = Query(None, gt=0, description="RTR ID"),
+    categoria: str = Query(None, description="Category"),
+    ean: str = Query(None, min_length=8, description="EAN code"),
+    limit: int = Query(20, ge=1, le=100, description="Max results (1-100)")
+    ): # Utilizamos Query en lugar de pydantic schema para validar ya que se entiende mejor con swagger y FastAPI para este tipo de consulta
+
+    try:
+        # 1. Construir filters
+        filters = {}
+        if nombre: filters['nombre'] = nombre
+        if rtr_id: filters['rtr_id'] = rtr_id
+        if categoria: filters['categoria'] = categoria
+        if ean: filters['ean'] = ean
+        
+        # 2. Validar que hay al menos un filtro
+        if not filters:
+            raise HTTPException(
+                status_code=400, 
+                detail="At least one search parameter is required"
+            )
+        
+        # 4. Llamar al CRUD 
+        results = articulo_crud.search(filters, limit=limit)
+        
+        return results
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Error searching articles: {str(e)}"
+        )
+    
+@app.get('/articles/search/history', response_model=List[schemas.ArticuloFullData])
+def search_article_history(
     nombre: str = Query(None, min_length=2, description="Product name"),
     rtr_id: int = Query(None, gt=0, description="RTR ID"),
     categoria: str = Query(None, description="Category"),
@@ -160,7 +195,11 @@ def search_article(
                 status_code=400, 
                 detail="At least one search parameter is required"
             )
-        # 3. Validar que precio y fecha sean coherentes
+        # 3. Validar que al menos un filtro de precio o fecha existe.
+        if 'min_price' not in filters and 'max_price' not in filters and 'min_date' not in filters and 'max_date' not in filters:
+            raise HTTPException(400, "No price or date filter")
+        
+        # 4. Validar que precio y fecha sean coherentes
         if 'min_price' in filters and 'max_price' in filters:
             if filters['min_price'] > filters['max_price']:
                 raise HTTPException(400, "min_price cannot be greater than max_price")
@@ -171,8 +210,8 @@ def search_article(
 
 
 
-        # 4. Llamar al CRUD real (cuando esté implementado)
-        results = articulo_crud.search(filters, limit=limit)
+        # 4. Llamar al CRUD 
+        results = articulo_crud.search_with_history(filters, limit=limit)
         
         return results
         
@@ -183,3 +222,14 @@ def search_article(
             status_code=500, 
             detail=f"Error searching articles: {str(e)}"
         )
+    
+
+@app.get('categories/', response_model= List[str])
+def get_categories():
+    """Obtener todos las Categorías"""
+    try:
+        categories = articulo_crud.get_all_categories()
+        return categories
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving articles: {str(e)}")
+    
