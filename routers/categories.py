@@ -1,10 +1,7 @@
 from fastapi import APIRouter, HTTPException
-# import schemas
 from typing import List
 from database.crud_operations import articulo_crud
-# from database.db_session import db_manager
-# from database.db_models import Articulo
-# from sqlalchemy import select
+
 
 
 router = APIRouter(
@@ -21,3 +18,4 @@ def get_categories():
         return categories
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving articles: {str(e)}")
+

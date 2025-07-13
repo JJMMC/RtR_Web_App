@@ -5,3 +5,4 @@ venv/
 mireadme.txt
 sqlalch_update.py
 .DS_Store
+schemas_old.py

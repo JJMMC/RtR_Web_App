@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Query
-import schemas
+import schemas.articles
 from typing import List
 from datetime import date
 from decimal import Decimal
@@ -15,7 +15,7 @@ router = APIRouter(
 )
 
 
-@router.get("/{article_id}", response_model=schemas.ArticuloResponse)
+@router.get("/{article_id}", response_model=schemas.articles.ArticuloResponse)
 def article_by_id(article_id: int):
     """Obtener artículo básico por ID"""
     try:
@@ -26,7 +26,7 @@ def article_by_id(article_id: int):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving article: {str(e)}")
 
-@router.get("/all_data/{article_id}", response_model=schemas.ArticuloFullData)
+@router.get("/all_data/{article_id}", response_model=schemas.articles.ArticuloFullData)
 def article_by_id_all_data(article_id: int):
     """Obtener artículo con historial completo por ID"""
     with db_manager.get_session() as session:
@@ -57,14 +57,14 @@ def article_by_id_all_data(article_id: int):
                 ]
             }
             
-            return schemas.ArticuloFullData.model_validate(article_data)
+            return schemas.articles.ArticuloFullData.model_validate(article_data)
             
         except HTTPException:
             raise
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error retrieving article data: {str(e)}")
 
-@router.get("/", response_model=List[schemas.ArticuloResponse])
+@router.get("/", response_model=List[schemas.articles.ArticuloResponse])
 def get_all_articles():
     """Obtener todos los artículos"""
     try:
@@ -73,8 +73,8 @@ def get_all_articles():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving articles: {str(e)}")
     
-@router.post("/", response_model=schemas.ArticuloResponse)
-def create_article(article: schemas.ArticuloCreate):
+@router.post("/", response_model=schemas.articles.ArticuloResponse)
+def create_article(article: schemas.articles.ArticuloCreate):
     
     # 1.-Convertimosa dicciónario
     product_data = dict(article)
@@ -109,8 +109,8 @@ def create_article(article: schemas.ArticuloCreate):
         "img_url": product_data_rtned.img_url
     }
 
-@router.put("/{article_id}", response_model=schemas.ArticuloResponse)
-def update_article(article_id: int, update_data: schemas.ArticuloUpdate):
+@router.put("/{article_id}", response_model=schemas.articles.ArticuloResponse)
+def update_article(article_id: int, update_data: schemas.articles.ArticuloUpdate):
     try:
         # 1.- Obtenemos el artículo a actualizar
         update_dic = dict(update_data)
@@ -129,7 +129,7 @@ def update_article(article_id: int, update_data: schemas.ArticuloUpdate):
 
 #### SEARCH FUCTIONS
 
-@router.get('/search', response_model=List[schemas.ArticuloResponse])
+@router.get('/search', response_model=List[schemas.articles.ArticuloResponse])
 def search_article(
     nombre: str = Query(None, min_length=2, description="Product name"),
     rtr_id: int = Query(None, gt=0, description="RTR ID"),
@@ -166,7 +166,7 @@ def search_article(
             detail=f"Error searching articles: {str(e)}"
         )
     
-@router.get('/search/history', response_model=List[schemas.ArticuloFullData])
+@router.get('/search/history', response_model=List[schemas.articles.ArticuloFullData])
 def search_article_history(
     nombre: str = Query(None, min_length=2, description="Product name"),
     rtr_id: int = Query(None, gt=0, description="RTR ID"),
@@ -224,5 +224,6 @@ def search_article_history(
             status_code=500, 
             detail=f"Error searching articles: {str(e)}"
         )
+
 
 
