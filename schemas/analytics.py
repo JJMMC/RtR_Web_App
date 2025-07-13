@@ -15,6 +15,19 @@ class PriceStats(BaseModel):
     fecha_primer_precio: Optional[date] = None
     fecha_ultimo_precio: Optional[date] = None
 
+
+
+# Schema para Stats básicos de todas las categorías
+class CategoriaStatsResponse(BaseModel):
+    categoria: str                    # Nombre de la categoría
+    total_productos: int             # Cuántos productos tiene
+    precio_promedio: Decimal         # Precio medio de productos en la categoría
+    precio_minimo: Decimal           # Producto más barato
+    precio_maximo: Decimal           # Producto más caro
+    ultima_actualizacion: date       # Última vez que se actualizó algún precio
+
+
+
 # Schema para respuesta con estadísticas (nuevo)
 class ArticuloWithStats(ArticuloResponse):
     estadisticas: Optional[PriceStats] = None

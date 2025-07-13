@@ -6,3 +6,5 @@ mireadme.txt
 sqlalch_update.py
 .DS_Store
 schemas_old.py
+migration_script.py
+test_analytics_crud.py

@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException, Query
 from typing import List
 from datetime import date
 from decimal import Decimal
-from database.crud_operations import articulo_crud
+from database.crud_operations import articulo_crud, analytics_crud
 from database.db_session import db_manager
 from database.db_models import Articulo
 from sqlalchemy import select
@@ -18,9 +18,15 @@ router = APIRouter(
 
 #### ANALITYCS STATS
 
-@router.get("/price-stats", response_model=List[str])
-def get_price_stats():
-    pass
+@router.get("/categories", response_model=List[str])
+def get_categories_stats():
+    categories = articulo_crud.get_all_categories()
+    if not categories:
+        raise HTTPException(status_code=404, detail="Article not found")
+    
+    categories_stats = []
+    for category in categories:
+        categories_stats.append(analytics_crud.get_all_categories_stats())
 
 '''
 Posibles analytics:

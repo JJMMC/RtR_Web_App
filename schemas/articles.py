@@ -3,8 +3,9 @@ from typing import List, Optional
 from datetime import date
 from decimal import Decimal
 from .hist_prices import HistorialPrecioResponse
-
+from .last_price import UltimoPrecioResponse
 # Schema base para Articulo
+
 class ArticuloBase(BaseModel):
     rtr_id: int = Field(..., gt=0, description="ID único del producto en RTR")
     categoria: str = Field(..., min_length=1, max_length=100)
@@ -39,5 +40,7 @@ class ArticuloResponse(ArticuloBase):
 # Schema para la respuesta completa de artículo con historial
 class ArticuloFullData(ArticuloResponse):
     historial_precios: List[HistorialPrecioResponse] = Field(default_factory=list)
+    precio_actualizado: Optional[UltimoPrecioResponse]
+    
     model_config = ConfigDict(from_attributes=True)
 

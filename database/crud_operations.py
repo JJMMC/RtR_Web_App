@@ -1,22 +1,25 @@
 from typing import List, Dict, Any, Optional, Sequence
-from sqlalchemy import insert, select, and_, update
-from sqlalchemy.orm import joinedload
+from sqlalchemy import insert, select, and_, update, func
+from sqlalchemy.orm import joinedload 
 from .crud_base import CRUDOperations
-from .db_models import Articulo, HistorialPrecio
+from .db_models import Articulo, HistorialPrecio, UltimoPrecio
 from .db_session import db_manager
+from datetime import date
+from decimal import Decimal
 import logging
-import schemas
+
 
 logger = logging.getLogger(__name__)
 
-class ArticuloCRUD(CRUDOperations):
-    """Operaciones CRUD específicas para artículos"""
+class ArticuloCRUD(CRUDOperations): # Clase para trabajar con la tabla Artículos de la DB
+    """Operaciones CRUD Básicas para artículos"""
     
     def insert_one(self, product_data: Dict[str, Any]) -> bool:
         """Insertar un artículo"""
         with self.get_session() as session:
             logger.info(f"Inserting article: {product_data.get('nombre', 'Unknown')}")
-            session.execute(insert(Articulo), [product_data])
+            new_article = Articulo(**product_data) 
+            session.add(new_article)
             session.commit()
             return True
     
@@ -169,7 +172,7 @@ class ArticuloCRUD(CRUDOperations):
             return session.execute(select(Articulo.categoria).distinct().where(Articulo.categoria.is_not(None))).scalars().all()
 
 
-class HistorialCRUD(CRUDOperations):
+class HistorialCRUD(CRUDOperations): # Clase para trabajar con la tabla Historial-precios de la DB
     """Operaciones CRUD específicas para historial"""
     
     def insert_one(self, price_data: Dict[str, Any]) -> bool:
@@ -209,7 +212,75 @@ class HistorialCRUD(CRUDOperations):
             ).all()
             return [fecha[0] for fecha in results]
 
+
+class UltimoPrecioCRUD(CRUDOperations): # Clase para trabajar con la tabla ultimo precio de la DB
+    """Operaciones CRUD específicas para Ultimo Precio"""
+
+    def get_by_rtr_id(self, rtr_id: int)-> Optional[UltimoPrecio]:
+        with self.get_session() as session:
+            query = (select(UltimoPrecio).where(UltimoPrecio.rtr_id == rtr_id))
+            return session.execute(query).scalar()
+    
+    def upsert_ultimo_precio(self, rtr_id: int, precio: Decimal):
+        with self.get_session() as session:
+            fecha = date.today()
+            existing = session.execute(select(UltimoPrecio).where(UltimoPrecio.rtr_id == rtr_id)).scalar_one_or_none()
+            
+            # En caso de que el artículo NO esté creado
+            if existing is None:
+                # NO EXISTE → CREATE (INSERT)
+                logger.info(f"Creando nuevo último precio para RTR_ID: {rtr_id}")
+                new_price = UltimoPrecio(rtr_id=rtr_id, precio=precio, fecha=fecha)
+                session.add(new_price)
+
+            # En caso de que el artículo SÍ esté creado
+            else:
+                # SÍ EXISTE → UPDATE
+                logger.info(f"Actualizando último precio para RTR_ID: {rtr_id}")
+                existing.precio = precio
+                existing.fecha = fecha
+            
+            # Guardamos los Cambios
+            session.commit()
+
+            
+class AnalyticsCRUD(CRUDOperations):
+    """Operaciones específicas para analytics y estadísticas"""
+    
+    def get_all_categories_stats(self) -> List[Dict[str, Any]]:
+        with self.get_session() as session:
+            query = (
+                select(
+                    Articulo.categoria, # CAMPO 1: La categoría (por la que vamos a agrupar)
+                    func.count(Articulo.id).label('total_productos'), # AGREGACIÓN 1: Contar cuántos productos hay por categoría
+                    func.avg(UltimoPrecio.precio).label('precio_promedio'), # AGREGACIÓN 2: Calcular el precio promedio por categoría
+                    func.min(UltimoPrecio.precio).label('precio_minimo'), # AGREGACIÓN 3: Encontrar el precio MÁS BARATO por categoría
+                    func.max(UltimoPrecio.precio).label('precio_maximo'), # AGREGACIÓN 4: Encontrar el precio MÁS CARO por categoría
+                    func.max(UltimoPrecio.fecha).label('fecha_ultimo_precio') # AGREGACIÓN 5: Encontrar la última fecha de esa categoría
+                )
+                .join(UltimoPrecio, Articulo.rtr_id == UltimoPrecio.rtr_id) # UNIR LAS TABLAS: Conectar artículos con sus últimos precios
+                .group_by(Articulo.categoria) # GROUP BY: Agrupar por categoría Con esto obtenemos UNA fila POR CADA categoría
+            )
+            
+            results = session.execute(query).all()
+            
+            # Convertir a lista de diccionarios
+            stats = []
+            for row in results:
+                stats.append({
+                    'categoria': row.categoria,
+                    'total_productos': row.total_productos,
+                    'precio_promedio': row.precio_promedio,
+                    'precio_minimo': row.precio_minimo,
+                    'precio_maximo': row.precio_maximo,
+                    'ultima_actualizacion': row.fecha_ultimo_precio
+                })
+            
+            return stats
+        
+        
 # Instancias globales para usar en funciones independientes
 articulo_crud = ArticuloCRUD(db_manager)
 historial_crud = HistorialCRUD(db_manager)
-
+analytics_crud = AnalyticsCRUD(db_manager)
+ultimo_precio_crud = UltimoPrecioCRUD(db_manager)
