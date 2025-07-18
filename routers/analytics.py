@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Query
-
+import schemas.analytics
 from typing import List
 from datetime import date
 from decimal import Decimal
@@ -18,15 +18,28 @@ router = APIRouter(
 
 #### ANALITYCS STATS
 
-@router.get("/categories", response_model=List[str])
+@router.get("/categories", response_model=List[schemas.analytics.CategoriaStatsResponse])
 def get_categories_stats():
-    categories = articulo_crud.get_all_categories()
-    if not categories:
+    categories_stats = analytics_crud.get_all_categories_stats()
+    if not categories_stats:
         raise HTTPException(status_code=404, detail="Article not found")
     
-    categories_stats = []
-    for category in categories:
-        categories_stats.append(analytics_crud.get_all_categories_stats())
+    # categories_stats = []
+    # for category in categories:
+    #     categories_stats.append(analytics_crud.get_all_categories_stats())
+    return categories_stats
+
+
+@router.get("/category/{category}", response_model=schemas.analytics.CategoriaStatsResponse)
+def get_category_stats(category: str):
+    category_stats = analytics_crud.get_category_stats(category)
+    if not category_stats:
+        raise HTTPException(status_code=404, detail="Article not found")
+    
+    # category_stats = []
+    # for category in category:
+    #     category_stats.append(analytics_crud.get_all_category_stats())
+    return category_stats
 
 '''
 Posibles analytics:

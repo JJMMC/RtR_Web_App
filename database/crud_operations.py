@@ -277,8 +277,43 @@ class AnalyticsCRUD(CRUDOperations):
                 })
             
             return stats
-        
-        
+
+    def get_category_stats(self, category) -> Dict[str, Any]:
+        with self.get_session() as session:
+            query = (
+                select(
+                    Articulo.categoria,
+                    func.count(Articulo.id).label('total_productos'),
+                    func.avg(UltimoPrecio.precio).label('precio_promedio'),
+                    func.min(UltimoPrecio.precio).label('precio_minimo'),
+                    func.max(UltimoPrecio.precio).label('precio_maximo'),
+                    func.max(UltimoPrecio.fecha).label('fecha_ultimo_precio')
+                )
+                .join(UltimoPrecio, Articulo.rtr_id == UltimoPrecio.rtr_id)
+                .where(Articulo.categoria == category)
+                .group_by(Articulo.categoria)  
+            )
+            
+            result = session.execute(query).first()  
+            
+            if not result:
+                return {}
+                
+            return {
+                'categoria': result.categoria,
+                'total_productos': result.total_productos,
+                'precio_promedio': result.precio_promedio,
+                'precio_minimo': result.precio_minimo,
+                'precio_maximo': result.precio_maximo,
+                'ultima_actualizacion': result.fecha_ultimo_precio
+            }       
+
+
+
+
+
+
+
 # Instancias globales para usar en funciones independientes
 articulo_crud = ArticuloCRUD(db_manager)
 historial_crud = HistorialCRUD(db_manager)

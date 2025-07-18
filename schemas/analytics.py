@@ -5,7 +5,7 @@ from decimal import Decimal
 from .articles import ArticuloResponse
 
 
-# Schema para estadísticas de precios (nuevo)
+# Schema RESPONSE para estadísticas de precios (nuevo)
 class PriceStats(BaseModel):
     precio_actual: Optional[Decimal] = None
     precio_minimo: Optional[Decimal] = None
