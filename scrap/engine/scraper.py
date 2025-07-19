@@ -1,6 +1,6 @@
 from scrap.schemas.schema_product import Product
-from scrap.utils.config import main_url
-from scrap.web_navigation.scrap_cat_urls import request_categorias_and_main_urls
+from scrap.config.config import main_url
+from scrap.web_navigation.web_tree import get_categories_tree
 from scrap.utils.remove_duplicates import remove_duplicates_by_id
 import logging
 from scrap.engine.extractor import ProductsExtractor
@@ -24,7 +24,7 @@ class ScrapEngine:
     
     def scrap_all_categories(self):
         # 1. Obtener categorías y URLs
-        result = request_categorias_and_main_urls()
+        result = get_categories_tree()
 
         # 2. Iterar sobre cada categoría
         all_data = []

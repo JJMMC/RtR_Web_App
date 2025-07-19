@@ -1,13 +1,13 @@
 from bs4 import BeautifulSoup, Tag
 from datetime import datetime
-from scrap.utils.config import main_url
-from scrap.engine.soup_gen import soup_generator
+from scrap.config.config import main_url
+from scrap.engine.page_parser import soup_generator
 from scrap.schemas.schema_cat_url import ScrapCategoriaModel
 from pydantic import ValidationError
 
 ## OBTENIENDO URLS ##
 # Función para obtener las CAT y CAT_URLS
-def request_categorias_and_main_urls(url=main_url):
+def get_categories_tree(url=main_url):
     soup = soup_generator(url)
     if not soup:
         return
@@ -48,7 +48,7 @@ def request_categorias_and_main_urls(url=main_url):
         return
 
 # Función que dada la cat_url de la categoria retorna list() de las urls (páginas) que descuelgan de ella para extraer los datos
-def find_child_urls(cat_url):
+def get_category_pages(cat_url):
     for i in range(1, 10):
         test_url = f"{cat_url}?page={str(i)}"
         soup = soup_generator(test_url)
@@ -65,9 +65,9 @@ def find_child_urls(cat_url):
 
 
 if __name__ == ("__main__"):
-    result = request_categorias_and_main_urls()
+    result = get_categories_tree()
     for categoria, url in result:
         print('Categoria: ',categoria, 'Url: ', url ) 
-        childs_in_cat = find_child_urls(url)
+        childs_in_cat = get_category_pages(url)
         for url in childs_in_cat:
             print(url)

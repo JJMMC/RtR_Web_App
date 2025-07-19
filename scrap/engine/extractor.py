@@ -1,10 +1,10 @@
 from scrap.schemas.schema_product import Product
 from bs4 import Tag
 from datetime import datetime
-from scrap.utils.config import main_url
-from scrap.engine.soup_gen import soup_generator
+from scrap.config.config import main_url
+from scrap.engine.page_parser import soup_generator
 from itertools import zip_longest
-from scrap.web_navigation.scrap_cat_urls import find_child_urls
+from scrap.web_navigation.web_tree import get_category_pages
 from scrap.utils.remove_duplicates import remove_duplicates_by_id
 
 
@@ -102,7 +102,7 @@ class ProductsExtractor:
     
     def scrap_all_childs_in_cat(self, cat, main_cat_url):
         cat_data = []
-        child_urls = find_child_urls(main_cat_url)
+        child_urls = get_category_pages(main_cat_url)
         for url in child_urls:
             child_url_data = self.scrap_product_details_in_child(url,cat)
             cat_data.extend(child_url_data)
