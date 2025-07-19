@@ -15,5 +15,5 @@ def soup_generator(url):
         return soup
     except requests.RequestException as e: #Falta definir ¿qué pasa si la url no se ha scrapeado
         print(f"Error fetching {url}: {e}")
-        return None
+        raise
 
