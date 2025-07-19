@@ -2,11 +2,11 @@ from scrap.schemas.schema_product import Product
 from bs4 import BeautifulSoup, Tag
 from datetime import datetime
 from scrap.utils.config import main_url
-from scrap.utils.soup_gen import soup_generator
+from scrap.engine.soup_gen import soup_generator
 from pydantic import ValidationError
 from itertools import zip_longest
-from scrap.utils.scrap_cat_urls import request_categorias_and_main_urls, find_child_urls
-from scrap.utils.remove_duplicates import get_duplicate_stats, remove_duplicates_by_id
+from scrap.web_navigation.scrap_cat_urls import request_categorias_and_main_urls, find_child_urls
+from scrap.utils.remove_duplicates import remove_duplicates_by_id
 
 # Para evitar todos los errores que da Pylance
 def extract_safe_data(soup, selector, attr_chain=None):
@@ -119,6 +119,7 @@ def scrap_data_from_web(url=main_url):
 if __name__ == ("__main__"):
     results = scrap_all_childs_in_cat('Coches', 'https://www.rtrvalladolid.es/117-coches-crawler')
     for i in results:
-        print(i) 
+        for m in i:
+            print(m)
 
 

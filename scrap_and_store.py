@@ -3,8 +3,8 @@ import asyncio
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, List, Tuple, Optional, Union
-from database.sacrped_to_db import insert_scraped, update_scraped, update_scraped_by_cat
-from scrap.scrap_data import scrap_data_from_web, scrap_all_childs_in_cat
+from database.sacrped_to_db import insert_scraped
+from scrap.utils.scrap_data import scrap_data_from_web, scrap_all_childs_in_cat
 from scrap.utils.remove_duplicates import remove_duplicates_by_id, get_duplicate_stats
 import logging
 

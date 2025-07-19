@@ -17,4 +17,3 @@ def soup_generator(url):
         print(f"Error fetching {url}: {e}")
         return None
 
-#print(soup_generator(url))
