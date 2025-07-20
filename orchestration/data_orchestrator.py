@@ -1,11 +1,12 @@
 from scrap.schemas.schema_product import Product
+from orchestration.utils.pydantic_conversion import product_to_articlecreate
 import json
 import asyncio
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, List, Tuple, Optional, Union
 import logging
-from schemas.articles import ArticuloCreate
+from schemas.articles import ArticleCreate
 from decimal import Decimal
 from datetime import date
 
@@ -36,21 +37,15 @@ class DataOrchestrator:
         serializable_data = []
         for item in self.scraped_data:
             try:
-                articulo = ArticuloCreate(
-                    categoria=item[0],
-                    rtr_id=item[1],
-                    nombre=item[2],
-                    precio_inicial=item[3],
-                    ean=item[4],
-                    art_url=item[5],
-                    img_url=item[6],
-                    fecha_precio=item[7]
-                )
-                data = articulo.model_dump()
-                if isinstance(data.get("precio_inicial"), Decimal):
-                    data["precio_inicial"] = float(data["precio_inicial"])
-                if isinstance(data.get('fecha_precio'), date):
-                    data['fecha_precio'] = str(data['fecha_precio'])
+                article = product_to_articlecreate(item)
+                
+                data = article.model_dump()
+                
+                if isinstance(data.get("price"), Decimal):
+                    data["price"] = float(data["price"])
+                if isinstance(data.get("price_date"), date):
+                    data["price_date"] = str(data["price_date"])
+                
                 serializable_data.append(data)
             except Exception as e:
                 logger.warning(f"Invalid data structure skipped: {item}")

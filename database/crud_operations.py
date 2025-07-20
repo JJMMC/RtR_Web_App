@@ -7,7 +7,7 @@ from .db_session import db_manager
 from datetime import date
 from decimal import Decimal
 import logging
-
+from schemas.articles import ArticleCreate
 
 logger = logging.getLogger(__name__)
 
@@ -31,21 +31,21 @@ class ArticuloCRUD(CRUDOperations): # Clase para trabajar con la tabla Artículo
             session.commit()
             return len(products_list)
     
-    def update_one(self, article_id, updated_data: Dict[str, Any]):
+    def update_one(self, rtr_id, updated_data: Dict[str, Any]):
         with self.get_session() as session:
             logger.info(f"Inserting article: {updated_data.get('nombre', 'Unknown')}")
             # 1.- Verificar si existe
             existing = session.execute(
-                select(Articulo).where(Articulo.id == article_id)
+                select(Articulo).where(Articulo.rtr_id == rtr_id)
             ).scalar_one_or_none()
 
             if not existing:
-                raise Exception(f"Article with id {article_id} not found")
+                raise Exception(f"Article with id {rtr_id} not found")
 
             # 2.- Luego actualizar
             session.execute(
                 update(Articulo)
-                .where(Articulo.id == article_id)
+                .where(Articulo.rtr_id == rtr_id)
                 .values(updated_data)
             )
 
@@ -54,7 +54,7 @@ class ArticuloCRUD(CRUDOperations): # Clase para trabajar con la tabla Artículo
             
             # 4. Obtener y retornar el objeto actualizado
             updated_article = session.execute(
-                select(Articulo).where(Articulo.id == article_id)
+                select(Articulo).where(Articulo.rtr_id == rtr_id)
             ).scalar_one()
             return updated_article    
            
@@ -182,7 +182,8 @@ class HistorialCRUD(CRUDOperations): # Clase para trabajar con la tabla Historia
             session.execute(insert(HistorialPrecio), [price_data])
             session.commit()
             return True
-    
+
+
     def bulk_insert(self, prices_list: List[Dict[str, Any]]) -> int:
         """Insertar múltiples precios de forma eficiente"""
         with self.get_session() as session:

@@ -1,11 +1,12 @@
+from orchestration.utils.pydantic_conversion import product_to_articlecreate
 from orchestration.scraping_orchestrator import ScrapOrchestrator
 from orchestration.data_orchestrator import DataOrchestrator
 from database.crud_operations import articulo_crud, historial_crud
 import logging
-from schemas.articles import ArticuloCreate
+from schemas.articles import ArticleCreate
 from decimal import Decimal
 from datetime import date
-
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -30,26 +31,51 @@ class MasterOrchestrator:
         
         # 3. Insertar en base de datos usando CRUD directamente
         for item in scraped_data:
-            # Validamos date para pylance
-            valor = item[7]
-            if isinstance(valor, str):
-                fecha_precio = date.fromisoformat(valor)
-            else:
-                fecha_precio = valor                                                
-            print(item[4])
-            # # Creamos el artículo con Pydantic
-            # articulo = ArticuloCreate(
-            #         categoria=item[0],
-            #         rtr_id= int(item[1]),
-            #         nombre=item[2],
-            #         precio_inicial= Decimal(item[3]),
-            #         ean=int(item[4]),
-            #         art_url=item[5],
-            #         img_url=item[6],
-            #         fecha_precio= fecha_precio
-            #     )
-            # print(articulo.nombre)
+            try:
+                article = product_to_articlecreate(item)
+                article_dict = article.model_dump()
+                
+                if not articulo_crud.exists_by_rtr_id(article.rtr_id):
+                    logger.info('New Article in DB')                   
+                    articulo_crud.insert_one(article_dict)
+                
+                articulo_crud.update_one(article.rtr_id, article_dict)
+                
+            except Exception as e:
+                logger.warning(f"Invalid data structure skipped: {item}")
+        
+    def run_from_temp_file(self, file_path: str):
+        data_orch = DataOrchestrator([])
+        loaded = data_orch.load_from_temp_file(Path(file_path))
+        if not loaded or "data" not in loaded:
+            logger.error("No se pudieron cargar datos del archivo temporal.")
+            return
+        for item in loaded["data"]:
+            try:
+                article = product_to_articlecreate(item)
+                article_dict = article.model_dump()
+                if not articulo_crud.exists_by_rtr_id(article.rtr_id):
+                    articulo_crud.insert_one(article_dict)
+                articulo_crud.update_one(article.rtr_id, article_dict)
+            except Exception as e:
+                logger.warning(f"Invalid data structure skipped: {item} ({e})")
+
+    def run_full_db_update(self):
+        self.run_complete_pipeline(category=None)
+
+    def validate_scraped_data(self, scraped_data):
+        valid = 0
+        invalid = 0
+        for item in scraped_data:
+            try:
+                product_to_articlecreate(item)
+                valid += 1
+            except Exception:
+                invalid += 1
+        logger.info(f"Valid items: {valid}, Invalid items: {invalid}")
+
 
 if __name__ == "__main__":
     test = MasterOrchestrator()
     test.run_complete_pipeline("Amortiguadores")
+

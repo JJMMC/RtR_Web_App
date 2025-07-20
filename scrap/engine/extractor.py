@@ -88,9 +88,6 @@ class ProductsExtractor:
                     scraped_date=fecha
                 )
                 products.append(product)
-                print()
-                print(type(product))
-                print(product)
             except Exception as e:
                 print(f"⚠️  Error procesando producto {href}: {e}")
                 continue

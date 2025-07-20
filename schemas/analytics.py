@@ -2,7 +2,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from typing import List, Optional
 from datetime import date
 from decimal import Decimal
-from .articles import ArticuloResponse
+from .articles import ArticleResponse
 
 
 # Schema RESPONSE para estadísticas de precios (nuevo)
@@ -29,7 +29,7 @@ class CategoriaStatsResponse(BaseModel):
 
 
 # Schema para respuesta con estadísticas (nuevo)
-class ArticuloWithStats(ArticuloResponse):
+class ArticuloWithStats(ArticleResponse):
     estadisticas: Optional[PriceStats] = None
     model_config = ConfigDict(from_attributes=True)
 
