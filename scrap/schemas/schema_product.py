@@ -21,15 +21,15 @@ class Product(BaseModel):
         """Formatea el precio eliminando € y ajustando decimales"""
         if hasattr(v, 'text'):
             # Si viene de BeautifulSoup
-            precio = v.text.replace("€", "").replace(",", ".").strip()
+            price = v.text.replace("€", "").replace(",", ".").strip()
         else:
             # Si ya es string
-            precio = str(v).replace("€", "").replace(",", ".").strip()
+            price = str(v).replace("€", "").replace(",", ".").strip()
             
         # Si tiene más de 6 caracteres, quitar el primer punto
-        if len(precio) > 6:
-            precio = precio.replace(".", "", 1)
-        return precio
+        if len(price) > 6:
+            price = price.replace(".", "", 1)
+        return price
     
     @field_validator('name')
     @classmethod

@@ -87,7 +87,9 @@ class ProductsExtractor:
                     scraped_date=fecha
                 )
                 products.append(product)
-                
+                print()
+                print(type(product))
+                print(product)
             except Exception as e:
                 print(f"⚠️  Error procesando producto {href}: {e}")
                 continue
@@ -108,3 +110,8 @@ class ProductsExtractor:
             cat_data.extend(child_url_data)
         cat_data = remove_duplicates_by_id(cat_data)
         return cat_data
+
+
+if __name__ == "__main__":
+    test = ProductsExtractor()
+    test.scrap_product_details_in_child('https://www.rtrvalladolid.es/376-amortiguadores-crawler?page=2', 'Amortiguadores')
