@@ -1,3 +1,4 @@
+from scrap.schemas.schema_product import Product
 import json
 import asyncio
 from datetime import datetime
@@ -14,7 +15,7 @@ TEMP_DIR = Path("temp_data")
 TEMP_DIR.mkdir(exist_ok=True)
 
 class DataOrchestrator:
-    def __init__(self, scraped_data: List[Tuple]):
+    def __init__(self, scraped_data: List[Product]):
         # Dependency injection
         self.scraped_data = scraped_data
 

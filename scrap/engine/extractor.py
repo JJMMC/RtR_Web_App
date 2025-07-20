@@ -1,5 +1,6 @@
 from scrap.schemas.schema_product import Product
 from bs4 import Tag
+from typing import List
 from datetime import datetime
 from scrap.config.config import main_url
 from scrap.engine.page_parser import soup_generator
@@ -38,7 +39,7 @@ class ProductsExtractor:
         
         return results
     
-    def scrap_product_details_in_child(self, url, cat):    
+    def scrap_product_details_in_child(self, url, cat) -> List[Product]:    
         print(f"\nObteniendo información: Categoria:{cat} {url}")
 
         # Generamos la sopa para la url child
@@ -96,13 +97,9 @@ class ProductsExtractor:
                 
         
         # Resultado, lista de productos que aparecen en una url child:
-            # - Validados
-            # - Corregidos / reformateados
-            # - Retornados en forma de tuplas
-        # CONVERTIR A TUPLAS PARA COMPATIBILIDAD
-        return [product.to_tuple() for product in products]
+        return products
     
-    def scrap_all_childs_in_cat(self, cat, main_cat_url):
+    def scrap_all_childs_in_cat(self, cat, main_cat_url)-> List[Product]:
         cat_data = []
         child_urls = get_category_pages(main_cat_url)
         for url in child_urls:

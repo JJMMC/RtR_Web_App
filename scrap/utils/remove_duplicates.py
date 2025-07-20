@@ -1,6 +1,7 @@
+from scrap.schemas.schema_product import Product
 from typing import List, Tuple
 
-def remove_duplicates_by_id(products_list: List[Tuple]) -> List[Tuple]:
+def remove_duplicates_by_id(products_list: List[Product]) -> List[Product]:
     """
     Elimina duplicados usando set para tracking eficiente de IDs únicos.
     
@@ -14,13 +15,13 @@ def remove_duplicates_by_id(products_list: List[Tuple]) -> List[Tuple]:
     unique_products = []
     duplicates = []
     
-    for product_tuple in products_list:
+    for product in products_list:
         # product_tuple[1] es rtr_id en mi estructura
-        rtr_id = product_tuple[1]
+        rtr_id = product.rtr_id
         
         if rtr_id not in seen_ids:
             seen_ids.add(rtr_id)
-            unique_products.append(product_tuple)
+            unique_products.append(product)
         else:
             duplicates.append(rtr_id)
     

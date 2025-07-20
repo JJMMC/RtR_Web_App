@@ -1,11 +1,11 @@
 from contextlib import contextmanager
-from typing import Optional, List
+# from typing import Optional, List
 from sqlalchemy import create_engine, select, join
 from sqlalchemy.orm import sessionmaker, Session as SQLSession
 from sqlalchemy.exc import SQLAlchemyError
 from .db_models import Base, Articulo, HistorialPrecio
-from fastapi import HTTPException
-from schemas.articles import ArticuloFullData, ArticuloResponse
+# from fastapi import HTTPException
+# from schemas.articles import ArticuloFullData, ArticuloResponse
 import logging
 
 # Configurar logging
