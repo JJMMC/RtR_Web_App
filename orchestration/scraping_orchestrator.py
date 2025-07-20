@@ -80,7 +80,7 @@ class ScrapOrchestrator:
         """
 
         url = dict(get_categories_tree())[category]
-        result = self._retry_with_timeout(self.scrap_engine.scrap_category(category,url))
+        result = self._retry_with_timeout(self.scrap_engine.scrap_category,category,url)
         return result
             
          

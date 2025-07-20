@@ -8,3 +8,4 @@ sqlalch_update.py
 schemas_old.py
 migration_script.py
 test_analytics_crud.py
+temp_data

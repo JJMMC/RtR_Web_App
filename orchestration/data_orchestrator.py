@@ -3,12 +3,10 @@ import asyncio
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, List, Tuple, Optional, Union
-from database.sacrped_to_db import insert_scraped
-# from scrap.utils.scrap_data import scrap_data_from_web, scrap_all_childs_in_cat
-from scrap.utils.remove_duplicates import remove_duplicates_by_id, get_duplicate_stats
 import logging
 from schemas.articles import ArticuloCreate
-
+from decimal import Decimal
+from datetime import date
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +45,12 @@ class DataOrchestrator:
                     img_url=item[6],
                     fecha_precio=item[7]
                 )
-                serializable_data.append(articulo.model_dump())
+                data = articulo.model_dump()
+                if isinstance(data.get("precio_inicial"), Decimal):
+                    data["precio_inicial"] = float(data["precio_inicial"])
+                if isinstance(data.get('fecha_precio'), date):
+                    data['fecha_precio'] = str(data['fecha_precio'])
+                serializable_data.append(data)
             except Exception as e:
                 logger.warning(f"Invalid data structure skipped: {item}")
         

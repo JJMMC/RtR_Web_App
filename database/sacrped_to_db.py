@@ -1,7 +1,7 @@
 from typing import List, Dict, Any, Tuple
 from .crud_operations import articulo_crud, historial_crud
 from .db_utils import scraped_to_dict, separate_article_and_price_data
-from scrap.scrap_url import scrap_rtr_crawler, scrap_rtr_crawler_by_cat
+#from scrap.scrap_url import scrap_rtr_crawler, scrap_rtr_crawler_by_cat
 import logging
 
 logger = logging.getLogger(__name__)
