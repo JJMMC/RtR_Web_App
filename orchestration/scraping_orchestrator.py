@@ -3,6 +3,7 @@ from scrap.web_navigation.web_tree import get_categories_tree
 import requests
 import time
 import logging
+from typing import Optional, Any
 
 
 logging.basicConfig(
@@ -54,7 +55,7 @@ class ScrapOrchestrator:
                 break
         return None 
 
-    def run_full_scraping(self):
+    def run_full_scraping(self) -> Optional[dict[str, Any]]:
         """
         Ejecuta el scraping completo de todas las categorías con reintentos ante timeout.
         
@@ -64,7 +65,7 @@ class ScrapOrchestrator:
         result = self._retry_with_timeout(self.scrap_engine.scrap_all_categories)
         return result
     
-    def run_category_scraping(self, category):
+    def run_category_scraping(self, category: str) -> Optional[dict[str, Any]]:
         """
         Ejecuta el scraping de una categoría específica con reintentos ante timeout.
             
