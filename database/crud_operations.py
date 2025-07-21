@@ -17,11 +17,59 @@ class ArticuloCRUD(CRUDOperations): # Clase para trabajar con la tabla Artículo
     def insert_one(self, product_data: Dict[str, Any]) -> bool:
         """Insertar un artículo"""
         with self.get_session() as session:
-            logger.info(f"Inserting article: {product_data.get('nombre', 'Unknown')}")
+            logger.info(f"Inserting article: {product_data.get('name', 'Unknown')}")
             new_article = Articulo(**product_data) 
             session.add(new_article)
             session.commit()
             return True
+    
+    # función cuando insertamos el artíuclo por primera vez, con precio    
+    def insert_one_with_price(self, product_data: Dict[str, Any]) -> bool:
+        """Insertar un artículo y su precio en historial y último precio"""
+        with self.get_session() as session:
+            try:
+                # 1. Insertar artículo
+                logger.info(f"Inserting article: {product_data.get('nombre', 'Unknown')}")
+                new_article = Articulo(
+                    rtr_id=product_data["rtr_id"],
+                    categoria=product_data["categoria"],
+                    nombre=product_data["nombre"],
+                    ean=product_data.get("ean"),
+                    art_url=product_data.get("art_url"),
+                    img_url=product_data.get("img_url"),
+                )
+                session.add(new_article)
+                session.flush()  # Para obtener el id si lo necesitas
+
+                # 2. Insertar historial de precios
+                historial = HistorialPrecio(
+                    rtr_id=product_data["rtr_id"],
+                    precio=product_data["precio"],
+                    fecha=product_data["fecha"],
+                )
+                session.add(historial)
+
+                # 3. Insertar/actualizar último precio
+                existing = session.execute(
+                    select(UltimoPrecio).where(UltimoPrecio.rtr_id == product_data["rtr_id"])
+                ).scalar_one_or_none()
+                if existing is None:
+                    ultimo = UltimoPrecio(
+                        rtr_id=product_data["rtr_id"],
+                        precio=product_data["precio"],
+                        fecha=product_data["fecha"],
+                    )
+                    session.add(ultimo)
+                else:
+                    existing.precio = product_data["precio"]
+                    existing.fecha = product_data["fecha"]
+
+                session.commit()
+                return True
+            except Exception as e:
+                logger.error(f"Error inserting article with price: {e}")
+                session.rollback()
+                return False
     
     def bulk_insert(self, products_list: List[Dict[str, Any]]) -> int:
         """Insertar múltiples artículos de forma eficiente"""

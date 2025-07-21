@@ -1,7 +1,7 @@
-from orchestration.utils.pydantic_conversion import product_to_articlecreate
+from orchestration.utils.pydantic_conversion import product_to_articlecreate, product_to_db_dict
 from orchestration.scraping_orchestrator import ScrapOrchestrator
 from orchestration.data_orchestrator import DataOrchestrator
-from database.crud_operations import articulo_crud, historial_crud
+from database.crud_operations import articulo_crud, historial_crud, ultimo_precio_crud
 import logging
 from schemas.articles import ArticleCreate
 from decimal import Decimal
@@ -33,14 +33,24 @@ class MasterOrchestrator:
         for item in scraped_data:
             try:
                 article = product_to_articlecreate(item)
-                article_dict = article.model_dump()
-                
+                article_dict = product_to_db_dict(item)
+           
                 if not articulo_crud.exists_by_rtr_id(article.rtr_id):
                     logger.info('New Article in DB')                   
-                    articulo_crud.insert_one(article_dict)
+                    articulo_crud.insert_one_with_price(article_dict)
                 
-                articulo_crud.update_one(article.rtr_id, article_dict)
-                
+                if historial_crud.exists_for_date(article_dict['rtr_id'], article_dict['precio']):
+                    logger.info('Price already updated')
+                    continue
+
+                data_to_update = {
+                    "rtr_id" : article.rtr_id, 
+                    "precio" : article.price,
+                    "fecha" : article.price_date
+
+                }
+                historial_crud.insert_one(data_to_update)
+                ultimo_precio_crud.upsert_ultimo_precio(data_to_update['rtr_id'], data_to_update['precio'])
             except Exception as e:
                 logger.warning(f"Invalid data structure skipped: {item}")
         
@@ -77,5 +87,5 @@ class MasterOrchestrator:
 
 if __name__ == "__main__":
     test = MasterOrchestrator()
-    test.run_complete_pipeline("Amortiguadores")
+    test.run_complete_pipeline()
 
