@@ -10,3 +10,5 @@ migration_script.py
 test_analytics_crud.py
 temp_data
 database/db_models_old.py
+rtr_crawler_Alchemy_old.db
+migration2_script.py
