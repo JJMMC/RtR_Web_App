@@ -3,7 +3,7 @@ from contextlib import contextmanager
 from sqlalchemy import create_engine, select, join
 from sqlalchemy.orm import sessionmaker, Session as SQLSession
 from sqlalchemy.exc import SQLAlchemyError
-from .db_models import Base, Articulo, HistorialPrecio
+from .db_models import Base, Article, PriceRecord
 # from fastapi import HTTPException
 # from schemas.articles import ArticuloFullData, ArticuloResponse
 import logging

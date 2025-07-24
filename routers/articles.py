@@ -3,9 +3,9 @@ import schemas.articles
 from typing import List
 from datetime import date
 from decimal import Decimal
-from database.crud_operations import articulo_crud
+from database.crud_operations import article_crud
 from database.db_session import db_manager
-from database.db_models import Articulo
+from database.db_models import Article
 from sqlalchemy import select
 
 
@@ -19,7 +19,7 @@ router = APIRouter(
 def article_by_id(article_id: int):
     """Obtener artículo básico por ID"""
     try:
-        article = articulo_crud.get_by_id(article_id)
+        article = article_crud.get_by_id(article_id)
         if article is None:
             raise HTTPException(status_code=404, detail="Article not found")
         return article
@@ -32,7 +32,7 @@ def article_by_id_all_data(article_id: int):
     with db_manager.get_session() as session:
         try:
             article = session.scalar(
-                select(Articulo).filter(Articulo.id == article_id)
+                select(Article).filter(Article.id == article_id)
             )
             
             if article is None:
@@ -42,18 +42,18 @@ def article_by_id_all_data(article_id: int):
             article_data = {
                 "id": article.id,
                 "rtr_id": article.rtr_id,
-                "categoria": article.categoria,
-                "nombre": article.nombre,
+                "categoria": article.category,
+                "nombre": article.name,
                 "ean": article.ean,
                 "art_url": article.art_url,
                 "img_url": article.img_url,
                 "historial_precios": [
                     {
                         "id": precio.id,
-                        "precio": precio.precio,
-                        "fecha": precio.fecha,
+                        "precio": precio.price,
+                        "fecha": precio.record_date,
                     }
-                    for precio in article.historial
+                    for precio in article.price_records
                 ]
             }
             
@@ -68,7 +68,7 @@ def article_by_id_all_data(article_id: int):
 def get_all_articles():
     """Obtener todos los artículos"""
     try:
-        articles = articulo_crud.get_all()
+        articles = article_crud.get_all()
         return articles
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving articles: {str(e)}")
@@ -84,15 +84,15 @@ def create_article(article: schemas.articles.ArticleCreate):
 
     # 2.-Comprobamos que no exista ya el artículo:
     
-    if articulo_crud.exists_by_rtr_id(article.rtr_id):
+    if article_crud.exists_by_rtr_id(article.rtr_id):
         print('Artículo ya declarado en la DB')
         raise HTTPException(409, "Already exists")
     
     # 3.-Insertamos el artículo en la db
-    articulo_crud.insert_one(product_data)
+    article_crud.insert_one(product_data)
 
     # 4.-Retornamos el artículo introducido
-    product_data_rtned = articulo_crud.get_by_rtr_id(article.rtr_id)
+    product_data_rtned = article_crud.get_by_rtr_id(article.rtr_id)
     
     # ✅ Verificar explícitamente que no es None:
     if product_data_rtned is None:
@@ -102,8 +102,8 @@ def create_article(article: schemas.articles.ArticleCreate):
     return {
         "id": product_data_rtned.id,  
         "rtr_id": product_data_rtned.rtr_id,
-        "categoria": product_data_rtned.categoria,
-        "nombre": product_data_rtned.nombre,
+        "categoria": product_data_rtned.category,
+        "nombre": product_data_rtned.name,
         "ean": product_data_rtned.ean,
         "art_url": product_data_rtned.art_url,
         "img_url": product_data_rtned.img_url
@@ -116,7 +116,7 @@ def update_article(article_id: int, update_data: schemas.articles.ArticleUpdate)
         update_dic = dict(update_data)
 
         # 2.- Actualizamos el artíuclo en la db
-        updated_article = articulo_crud.update_one(article_id, update_dic)
+        updated_article = article_crud.update_one(article_id, update_dic)
         
         # 3. Retornar el resultado
         return updated_article
@@ -154,7 +154,7 @@ def search_article(
             )
         
         # 4. Llamar al CRUD 
-        results = articulo_crud.search(filters, limit=limit)
+        results = article_crud.search(filters, limit=limit)
         
         return results
         
@@ -213,7 +213,7 @@ def search_article_history(
 
 
         # 4. Llamar al CRUD 
-        results = articulo_crud.search_with_history(filters, limit=limit)
+        results = article_crud.search_with_history(filters, limit=limit)
         
         return results
         

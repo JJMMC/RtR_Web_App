@@ -2,8 +2,8 @@ from pydantic import BaseModel, ConfigDict, Field
 from typing import List, Optional
 from datetime import date
 from decimal import Decimal
-from .hist_prices import HistorialPrecioResponse
-from .last_price import UltimoPrecioResponse
+from .hist_prices import PriceRecordResponse
+from .last_price import LastPriceResponse
 
 # Schema base para Articulo
 class ArticleBase(BaseModel):
@@ -39,8 +39,8 @@ class ArticleResponse(ArticleBase):
 
 # Schema para la respuesta completa de artículo con historial
 class ArticleFullData(ArticleResponse):
-    price_history: List[HistorialPrecioResponse] = Field(default_factory=list)
-    updated_price: Optional[UltimoPrecioResponse]
+    price_history: List[PriceRecordResponse] = Field(default_factory=list)
+    updated_price: Optional[LastPriceResponse]
     
     model_config = ConfigDict(from_attributes=True)
 

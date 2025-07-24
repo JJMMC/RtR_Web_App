@@ -4,18 +4,18 @@ from datetime import date
 from decimal import Decimal
 
 
-# Schema base para HistorialPrecio (SIN rtr_id redundante)
-class HistorialPrecioBase(BaseModel):
+# Schema base para PriceRecord (SIN rtr_id redundante)
+class PriceRecordBase(BaseModel):
     precio: Decimal = Field(..., ge=0, description="Precio debe ser mayor o igual a 0")
     fecha: date
 
-# Schema para respuesta de HistorialPrecio (SIN rtr_id redundante)
-class HistorialPrecioResponse(HistorialPrecioBase):
+# Schema para respuesta de PriceRecord (SIN rtr_id redundante)
+class PriceRecordResponse(PriceRecordBase):
     id: int
     model_config = ConfigDict(from_attributes=True)
 
 # Schema para crear precios (requiere que el artículo ya exista)
-class HistorialPrecioCreate(BaseModel):
+class PriceRecordCreate(BaseModel):
     precio: Decimal = Field(..., ge=0, description="Precio del producto")
     fecha: date = Field(default_factory=date.today, description="Fecha del precio")
     

@@ -1,16 +1,16 @@
 from pydantic import BaseModel, ConfigDict, Field
 from datetime import date
 from decimal import Decimal
-from .hist_prices import HistorialPrecioResponse
+from .hist_prices import PriceRecordResponse
 
-class UltimoPrecioBase(BaseModel):
+class LastPriceBase(BaseModel):
     rtr_id: int
     precio: Decimal
     fecha: date
 
-class UltimoPrecioCreate(UltimoPrecioBase):
+class LastPriceCreate(LastPriceBase):
     pass
 
-class UltimoPrecioResponse(UltimoPrecioBase):
+class LastPriceResponse(LastPriceBase):
     id: int
     model_config = ConfigDict(from_attributes=True)

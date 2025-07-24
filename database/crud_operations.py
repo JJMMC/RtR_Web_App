@@ -2,23 +2,23 @@ from typing import List, Dict, Any, Optional, Sequence
 from sqlalchemy import insert, select, and_, update, func
 from sqlalchemy.orm import joinedload 
 from .crud_base import CRUDOperations
-from .db_models import Articulo, HistorialPrecio, UltimoPrecio
+from .db_models import Article, PriceRecord, LastPrice
 from .db_session import db_manager
 from datetime import date
 from decimal import Decimal
 import logging
-from schemas.articles import ArticleCreate
+# from schemas.articles import ArticleCreate
 
 logger = logging.getLogger(__name__)
 
-class ArticuloCRUD(CRUDOperations): # Clase para trabajar con la tabla Artículos de la DB
+class ArticleCRUD(CRUDOperations): # Clase para trabajar con la tabla Artículos de la DB
     """Operaciones CRUD Básicas para artículos"""
     
     def insert_one(self, product_data: Dict[str, Any]) -> bool:
         """Insertar un artículo"""
         with self.get_session() as session:
             logger.info(f"Inserting article: {product_data.get('name', 'Unknown')}")
-            new_article = Articulo(**product_data) 
+            new_article = Article(**product_data) 
             session.add(new_article)
             session.commit()
             return True
@@ -29,11 +29,11 @@ class ArticuloCRUD(CRUDOperations): # Clase para trabajar con la tabla Artículo
         with self.get_session() as session:
             try:
                 # 1. Insertar artículo
-                logger.info(f"Inserting article: {product_data.get('nombre', 'Unknown')}")
-                new_article = Articulo(
+                logger.info(f"Inserting article: {product_data.get('name', 'Unknown')}")
+                new_article = Article(
                     rtr_id=product_data["rtr_id"],
-                    categoria=product_data["categoria"],
-                    nombre=product_data["nombre"],
+                    category=product_data["category"],
+                    name=product_data["name"],
                     ean=product_data.get("ean"),
                     art_url=product_data.get("art_url"),
                     img_url=product_data.get("img_url"),
@@ -42,27 +42,27 @@ class ArticuloCRUD(CRUDOperations): # Clase para trabajar con la tabla Artículo
                 session.flush()  # Para obtener el id si lo necesitas
 
                 # 2. Insertar historial de precios
-                historial = HistorialPrecio(
+                historial = PriceRecord(
                     rtr_id=product_data["rtr_id"],
-                    precio=product_data["precio"],
-                    fecha=product_data["fecha"],
+                    price=product_data["price"],
+                    record_date=product_data["record_date"],
                 )
                 session.add(historial)
 
                 # 3. Insertar/actualizar último precio
                 existing = session.execute(
-                    select(UltimoPrecio).where(UltimoPrecio.rtr_id == product_data["rtr_id"])
+                    select(LastPrice).where(LastPrice.rtr_id == product_data["rtr_id"])
                 ).scalar_one_or_none()
                 if existing is None:
-                    ultimo = UltimoPrecio(
+                    ultimo = LastPrice(
                         rtr_id=product_data["rtr_id"],
-                        precio=product_data["precio"],
-                        fecha=product_data["fecha"],
+                        price=product_data["price"],
+                        record_date=product_data["record_date"],
                     )
                     session.add(ultimo)
                 else:
-                    existing.precio = product_data["precio"]
-                    existing.fecha = product_data["fecha"]
+                    existing.price = product_data["price"]
+                    existing.record_date = product_data["record_date"]
 
                 session.commit()
                 return True
@@ -75,16 +75,16 @@ class ArticuloCRUD(CRUDOperations): # Clase para trabajar con la tabla Artículo
         """Insertar múltiples artículos de forma eficiente"""
         with self.get_session() as session:
             logger.info(f"Bulk inserting {len(products_list)} articles")
-            session.execute(insert(Articulo), products_list)
+            session.execute(insert(Article), products_list)
             session.commit()
             return len(products_list)
     
     def update_one(self, rtr_id, updated_data: Dict[str, Any]):
         with self.get_session() as session:
-            logger.info(f"Inserting article: {updated_data.get('nombre', 'Unknown')}")
+            logger.info(f"Inserting article: {updated_data.get('name', 'Unknown')}")
             # 1.- Verificar si existe
             existing = session.execute(
-                select(Articulo).where(Articulo.rtr_id == rtr_id)
+                select(Article).where(Article.rtr_id == rtr_id)
             ).scalar_one_or_none()
 
             if not existing:
@@ -92,8 +92,8 @@ class ArticuloCRUD(CRUDOperations): # Clase para trabajar con la tabla Artículo
 
             # 2.- Luego actualizar
             session.execute(
-                update(Articulo)
-                .where(Articulo.rtr_id == rtr_id)
+                update(Article)
+                .where(Article.rtr_id == rtr_id)
                 .values(updated_data)
             )
 
@@ -102,7 +102,7 @@ class ArticuloCRUD(CRUDOperations): # Clase para trabajar con la tabla Artículo
             
             # 4. Obtener y retornar el objeto actualizado
             updated_article = session.execute(
-                select(Articulo).where(Articulo.rtr_id == rtr_id)
+                select(Article).where(Article.rtr_id == rtr_id)
             ).scalar_one()
             return updated_article    
            
@@ -110,35 +110,35 @@ class ArticuloCRUD(CRUDOperations): # Clase para trabajar con la tabla Artículo
         """Verificar si existe artículo por RTR ID"""
         with self.get_session() as session:
             result = session.execute(
-                select(Articulo.id).where(Articulo.rtr_id == rtr_id)
+                select(Article.id).where(Article.rtr_id == rtr_id)
             ).scalar_one_or_none()
             return result is not None
     
-    def get_by_id(self, id: int) -> Optional[Articulo]:
+    def get_by_id(self, id: int) -> Optional[Article]:
         """Obtener artículo por ID"""
         with self.get_session() as session:
             return session.execute(
-                select(Articulo).where(Articulo.id == id)
+                select(Article).where(Article.id == id)
             ).scalar_one_or_none()
     
-    def get_by_rtr_id(self, rtr_id: int) -> Optional[Articulo]:
+    def get_by_rtr_id(self, rtr_id: int) -> Optional[Article]:
         """Obtener artículo por RTR ID"""
         with self.get_session() as session:
             return session.execute(
-                select(Articulo).where(Articulo.rtr_id == rtr_id)
+                select(Article).where(Article.rtr_id == rtr_id)
             ).scalar_one_or_none()
    
-    def get_all(self) -> List[Articulo]:
+    def get_all(self) -> List[Article]:
         """Obtener todos los artículos"""
         with self.get_session() as session:
             try:
-                return session.query(Articulo).all()
+                return session.query(Article).all()
             except Exception as e:
                 logger.error(f"Error getting all articles: {e}")
                 raise  # Propagar el error para que la capa API lo maneje
         # Context manager se encarga del cierre automáticamente
 
-    def search(self, filters: Dict[str, Any], limit: int = 20) -> Sequence[Articulo]:
+    def search(self, filters: Dict[str, Any], limit: int = 20) -> Sequence[Article]:
         with self.get_session() as session:
             
             
@@ -146,26 +146,26 @@ class ArticuloCRUD(CRUDOperations): # Clase para trabajar con la tabla Artículo
             article_conditions = []
 
 
-            if 'nombre' in filters:
-                article_conditions.append(Articulo.nombre.ilike(f"%{filters['nombre']}%"))
+            if 'name' in filters:
+                article_conditions.append(Article.name.ilike(f"%{filters['name']}%"))
             
-            if 'categoria' in filters:
-                article_conditions.append(Articulo.categoria.ilike(f"%{filters['categoria']}%"))
+            if 'category' in filters:
+                article_conditions.append(Article.category.ilike(f"%{filters['category']}%"))
             
             if 'rtr_id' in filters:
-                article_conditions.append(Articulo.rtr_id == filters['rtr_id'])
+                article_conditions.append(Article.rtr_id == filters['rtr_id'])
             
             if 'ean' in filters:
-                article_conditions.append(Articulo.ean == filters['ean'])
+                article_conditions.append(Article.ean == filters['ean'])
 
             # Creamos el Query
-            query = select(Articulo)  
+            query = select(Article)  
             query = query.where(and_(*article_conditions))    
             query = query.limit(limit)
 
             return session.execute(query).scalars().all()
 
-    def search_with_history(self, filters: Dict[str, Any], limit: int = 20) -> Sequence[Articulo]:
+    def search_with_history(self, filters: Dict[str, Any], limit: int = 20) -> Sequence[Article]:
         with self.get_session() as session:
             
             
@@ -174,38 +174,38 @@ class ArticuloCRUD(CRUDOperations): # Clase para trabajar con la tabla Artículo
             pricedate_conditions = []
 
 
-            if 'nombre' in filters:
-                article_conditions.append(Articulo.nombre.ilike(f"%{filters['nombre']}%"))
+            if 'name' in filters:
+                article_conditions.append(Article.name.ilike(f"%{filters['name']}%"))
             
-            if 'categoria' in filters:
-                article_conditions.append(Articulo.categoria.ilike(f"%{filters['categoria']}%"))
+            if 'category' in filters:
+                article_conditions.append(Article.category.ilike(f"%{filters['category']}%"))
             
             if 'rtr_id' in filters:
-                article_conditions.append(Articulo.rtr_id == filters['rtr_id'])
+                article_conditions.append(Article.rtr_id == filters['rtr_id'])
             
             if 'ean' in filters:
-                article_conditions.append(Articulo.ean == filters['ean'])
+                article_conditions.append(Article.ean == filters['ean'])
             
             if 'max_price' in filters:
-                pricedate_conditions.append(HistorialPrecio.precio <= filters['max_price'])
+                pricedate_conditions.append(PriceRecord.price <= filters['max_price'])
 
             if 'min_price' in filters:
-                pricedate_conditions.append(HistorialPrecio.precio >= filters['min_price'])
+                pricedate_conditions.append(PriceRecord.price >= filters['min_price'])
 
             if 'max_date' in filters:
-                pricedate_conditions.append(HistorialPrecio.fecha <= filters['max_date'])
+                pricedate_conditions.append(PriceRecord.record_date <= filters['max_date'])
 
             if 'min_date' in filters:
-                pricedate_conditions.append(HistorialPrecio.fecha >= filters['min_date'])
+                pricedate_conditions.append(PriceRecord.record_date >= filters['min_date'])
 
 
 
 
             # Como el endpoint ya valida que existen filtros de precio/fecha,
             # siempre necesitaremos JOIN y eager loading
-            query = (select(Articulo)
-                    .options(joinedload(Articulo.historial))
-                    .join(HistorialPrecio, HistorialPrecio.rtr_id == Articulo.rtr_id)
+            query = (select(Article)
+                    .options(joinedload(Article.price_records))
+                    .join(PriceRecord, PriceRecord.rtr_id == Article.rtr_id)
                     .distinct())
                 
             # Aplicar TODAS las condiciones con AND
@@ -217,17 +217,17 @@ class ArticuloCRUD(CRUDOperations): # Clase para trabajar con la tabla Artículo
         
     def get_all_categories(self):
         with self.get_session() as session:
-            return session.execute(select(Articulo.categoria).distinct().where(Articulo.categoria.is_not(None))).scalars().all()
+            return session.execute(select(Article.category).distinct().where(Article.category.is_not(None))).scalars().all()
 
 
-class HistorialCRUD(CRUDOperations): # Clase para trabajar con la tabla Historial-precios de la DB
+class PriceRecordCRUD(CRUDOperations): # Clase para trabajar con la tabla Historial-precios de la DB
     """Operaciones CRUD específicas para historial"""
     
     def insert_one(self, price_data: Dict[str, Any]) -> bool:
         """Insertar un precio"""
         with self.get_session() as session:
             logger.info(f"Inserting price for RTR_ID: {price_data.get('rtr_id')}")
-            session.execute(insert(HistorialPrecio), [price_data])
+            session.execute(insert(PriceRecord), [price_data])
             session.commit()
             return True
 
@@ -236,18 +236,18 @@ class HistorialCRUD(CRUDOperations): # Clase para trabajar con la tabla Historia
         """Insertar múltiples precios de forma eficiente"""
         with self.get_session() as session:
             logger.info(f"Bulk inserting {len(prices_list)} price records")
-            session.execute(insert(HistorialPrecio), prices_list)
+            session.execute(insert(PriceRecord), prices_list)
             session.commit()
             return len(prices_list)
     
-    def exists_for_date(self, rtr_id: int, fecha: str) -> bool:
+    def exists_for_date(self, rtr_id: int, record_date: str) -> bool:
         """Verificar si existe precio para una fecha específica"""
         with self.get_session() as session:
             result = session.execute(
-                select(HistorialPrecio.id).where(
+                select(PriceRecord.id).where(
                     and_(
-                        HistorialPrecio.rtr_id == rtr_id,
-                        HistorialPrecio.fecha == fecha
+                        PriceRecord.rtr_id == rtr_id,
+                        PriceRecord.record_date == record_date
                     )
                 )
             ).scalar_one_or_none()
@@ -257,37 +257,37 @@ class HistorialCRUD(CRUDOperations): # Clase para trabajar con la tabla Historia
         """Obtener todas las fechas registradas para un RTR ID"""
         with self.get_session() as session:
             results = session.execute(
-                select(HistorialPrecio.fecha).where(HistorialPrecio.rtr_id == rtr_id)
+                select(PriceRecord.record_date).where(PriceRecord.rtr_id == rtr_id)
             ).all()
             return [fecha[0] for fecha in results]
 
 
-class UltimoPrecioCRUD(CRUDOperations): # Clase para trabajar con la tabla ultimo precio de la DB
+class LastPriceCRUD(CRUDOperations): # Clase para trabajar con la tabla ultimo precio de la DB
     """Operaciones CRUD específicas para Ultimo Precio"""
 
-    def get_by_rtr_id(self, rtr_id: int)-> Optional[UltimoPrecio]:
+    def get_by_rtr_id(self, rtr_id: int)-> Optional[LastPrice]:
         with self.get_session() as session:
-            query = (select(UltimoPrecio).where(UltimoPrecio.rtr_id == rtr_id))
+            query = (select(LastPrice).where(LastPrice.rtr_id == rtr_id))
             return session.execute(query).scalar()
     
-    def upsert_ultimo_precio(self, rtr_id: int, precio: Decimal):
+    def upsert_ultimo_precio(self, rtr_id: int, price: Decimal):
         with self.get_session() as session:
-            fecha = date.today()
-            existing = session.execute(select(UltimoPrecio).where(UltimoPrecio.rtr_id == rtr_id)).scalar_one_or_none()
+            record_date = date.today()
+            existing = session.execute(select(LastPrice).where(LastPrice.rtr_id == rtr_id)).scalar_one_or_none()
             
             # En caso de que el artículo NO esté creado
             if existing is None:
                 # NO EXISTE → CREATE (INSERT)
-                logger.info(f"Creando nuevo último precio para RTR_ID: {rtr_id}")
-                new_price = UltimoPrecio(rtr_id=rtr_id, precio=precio, fecha=fecha)
+                logger.info(f"Creando nuevo último price para RTR_ID: {rtr_id}")
+                new_price = LastPrice(rtr_id=rtr_id, price=price, record_date=record_date)
                 session.add(new_price)
 
             # En caso de que el artículo SÍ esté creado
             else:
                 # SÍ EXISTE → UPDATE
                 logger.info(f"Actualizando último precio para RTR_ID: {rtr_id}")
-                existing.precio = precio
-                existing.fecha = fecha
+                existing.price = price
+                existing.record_date = record_date
             
             # Guardamos los Cambios
             session.commit()
@@ -300,15 +300,15 @@ class AnalyticsCRUD(CRUDOperations):
         with self.get_session() as session:
             query = (
                 select(
-                    Articulo.categoria, # CAMPO 1: La categoría (por la que vamos a agrupar)
-                    func.count(Articulo.id).label('total_productos'), # AGREGACIÓN 1: Contar cuántos productos hay por categoría
-                    func.avg(UltimoPrecio.precio).label('precio_promedio'), # AGREGACIÓN 2: Calcular el precio promedio por categoría
-                    func.min(UltimoPrecio.precio).label('precio_minimo'), # AGREGACIÓN 3: Encontrar el precio MÁS BARATO por categoría
-                    func.max(UltimoPrecio.precio).label('precio_maximo'), # AGREGACIÓN 4: Encontrar el precio MÁS CARO por categoría
-                    func.max(UltimoPrecio.fecha).label('fecha_ultimo_precio') # AGREGACIÓN 5: Encontrar la última fecha de esa categoría
+                    Article.category, # CAMPO 1: La categoría (por la que vamos a agrupar)
+                    func.count(Article.id).label('total_productos'), # AGREGACIÓN 1: Contar cuántos productos hay por categoría
+                    func.avg(LastPrice.price).label('precio_promedio'), # AGREGACIÓN 2: Calcular el precio promedio por categoría
+                    func.min(LastPrice.price).label('precio_minimo'), # AGREGACIÓN 3: Encontrar el precio MÁS BARATO por categoría
+                    func.max(LastPrice.price).label('precio_maximo'), # AGREGACIÓN 4: Encontrar el precio MÁS CARO por categoría
+                    func.max(LastPrice.record_date).label('fecha_ultimo_precio') # AGREGACIÓN 5: Encontrar la última fecha de esa categoría
                 )
-                .join(UltimoPrecio, Articulo.rtr_id == UltimoPrecio.rtr_id) # UNIR LAS TABLAS: Conectar artículos con sus últimos precios
-                .group_by(Articulo.categoria) # GROUP BY: Agrupar por categoría Con esto obtenemos UNA fila POR CADA categoría
+                .join(LastPrice, Article.rtr_id == LastPrice.rtr_id) # UNIR LAS TABLAS: Conectar artículos con sus últimos precios
+                .group_by(Article.category) # GROUP BY: Agrupar por categoría Con esto obtenemos UNA fila POR CADA categoría
             )
             
             results = session.execute(query).all()
@@ -317,7 +317,7 @@ class AnalyticsCRUD(CRUDOperations):
             stats = []
             for row in results:
                 stats.append({
-                    'categoria': row.categoria,
+                    'category': row.category,
                     'total_productos': row.total_productos,
                     'precio_promedio': row.precio_promedio,
                     'precio_minimo': row.precio_minimo,
@@ -331,16 +331,16 @@ class AnalyticsCRUD(CRUDOperations):
         with self.get_session() as session:
             query = (
                 select(
-                    Articulo.categoria,
-                    func.count(Articulo.id).label('total_productos'),
-                    func.avg(UltimoPrecio.precio).label('precio_promedio'),
-                    func.min(UltimoPrecio.precio).label('precio_minimo'),
-                    func.max(UltimoPrecio.precio).label('precio_maximo'),
-                    func.max(UltimoPrecio.fecha).label('fecha_ultimo_precio')
+                    Article.category,
+                    func.count(Article.id).label('total_productos'),
+                    func.avg(LastPrice.price).label('precio_promedio'),
+                    func.min(LastPrice.price).label('precio_minimo'),
+                    func.max(LastPrice.price).label('precio_maximo'),
+                    func.max(LastPrice.record_date).label('fecha_ultimo_precio')
                 )
-                .join(UltimoPrecio, Articulo.rtr_id == UltimoPrecio.rtr_id)
-                .where(Articulo.categoria == category)
-                .group_by(Articulo.categoria)  
+                .join(LastPrice, Article.rtr_id == LastPrice.rtr_id)
+                .where(Article.category == category)
+                .group_by(Article.category)  
             )
             
             result = session.execute(query).first()  
@@ -349,7 +349,7 @@ class AnalyticsCRUD(CRUDOperations):
                 return {}
                 
             return {
-                'categoria': result.categoria,
+                'category': result.category,
                 'total_productos': result.total_productos,
                 'precio_promedio': result.precio_promedio,
                 'precio_minimo': result.precio_minimo,
@@ -364,7 +364,7 @@ class AnalyticsCRUD(CRUDOperations):
 
 
 # Instancias globales para usar en funciones independientes
-articulo_crud = ArticuloCRUD(db_manager)
-historial_crud = HistorialCRUD(db_manager)
+article_crud = ArticleCRUD(db_manager)
+price_record_crud = PriceRecordCRUD(db_manager)
 analytics_crud = AnalyticsCRUD(db_manager)
-ultimo_precio_crud = UltimoPrecioCRUD(db_manager)
+last_price_crud = LastPriceCRUD(db_manager)

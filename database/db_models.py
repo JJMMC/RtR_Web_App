@@ -20,45 +20,45 @@ class Base(DeclarativeBase):
     pass
 
 # Definir la tabla de artículos
-class Articulo(Base):
-    __tablename__ = "articulos"
+class Article(Base):
+    __tablename__ = "articles"
     id: Mapped[int] = mapped_column(Integer, autoincrement=True, primary_key=True)
     rtr_id: Mapped[int] = mapped_column(Integer, nullable=False, unique=True )  # Clave primaria correctamente definida
-    categoria: Mapped[str] = mapped_column(String(100), nullable=False)
-    nombre: Mapped[str] = mapped_column(String(255), nullable=False)
+    category: Mapped[str] = mapped_column(String(100), nullable=False)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
     ean: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     art_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     img_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     
-    # Relación con historial_precios
-    historial: Mapped[list["HistorialPrecio"]] = relationship(back_populates="articulo")
+    # Relación con price_record
+    price_records: Mapped[list["PriceRecord"]] = relationship(back_populates="article")
     
-    # Relación con ultimo_precio
-    precio_actualizado: Mapped["UltimoPrecio"] = relationship(back_populates="articulo", uselist=False)
+    # Relación con last_price
+    updated_price: Mapped["LastPrice"] = relationship(back_populates="article", uselist=False)
 
 # Definir la tabla de historial de precios
-class HistorialPrecio(Base):
-    __tablename__ = "historial_precios"
+class PriceRecord(Base):
+    __tablename__ = "price_records"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    rtr_id: Mapped[int] = mapped_column(Integer, ForeignKey("articulos.rtr_id"), nullable=False)
-    precio: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)  # 10 dígitos con 2 decimales
-    fecha: Mapped[date] = mapped_column(Date, nullable=False)
+    rtr_id: Mapped[int] = mapped_column(Integer, ForeignKey("articles.rtr_id"), nullable=False)
+    price: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)  # 10 dígitos con 2 decimales
+    record_date: Mapped[date] = mapped_column(Date, nullable=False)
     
-    # Relación con Articulos
-    articulo: Mapped["Articulo"] = relationship(back_populates="historial")
+    # Relación con Articles
+    article: Mapped["Article"] = relationship(back_populates="price_records")
     
 # Definir la tabla de ultimo precio
-class UltimoPrecio(Base):
-    __tablename__ = "ultimo_precio"
+class LastPrice(Base):
+    __tablename__ = "last_price"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    rtr_id: Mapped[int] = mapped_column(Integer, ForeignKey("articulos.rtr_id"), nullable=False, unique=True)
-    precio: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)  # 10 dígitos con 2 decimales
-    fecha: Mapped[date] = mapped_column(Date, nullable=False)
+    rtr_id: Mapped[int] = mapped_column(Integer, ForeignKey("articles.rtr_id"), nullable=False, unique=True)
+    price: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)  # 10 dígitos con 2 decimales
+    record_date: Mapped[date] = mapped_column(Date, nullable=False)
     
-    # Relación con Articulos
-    articulo: Mapped["Articulo"] = relationship(back_populates="precio_actualizado")
+    # Relación con Articles
+    article: Mapped["Article"] = relationship(back_populates="updated_price")
 
 
 

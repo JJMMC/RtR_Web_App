@@ -3,9 +3,9 @@ from fastapi import FastAPI, HTTPException, Query
 from typing import List
 from datetime import date
 from decimal import Decimal
-from database.crud_operations import articulo_crud
+from database.crud_operations import article_crud
 from database.db_session import db_manager
-from database.db_models import Articulo
+from database.db_models import Article
 from sqlalchemy import select
 from routers import articles, categories, analytics
 

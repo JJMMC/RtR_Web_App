@@ -1,7 +1,7 @@
 from orchestration.utils.pydantic_conversion import product_to_articlecreate, product_to_db_dict
 from orchestration.scraping_orchestrator import ScrapOrchestrator
 from orchestration.data_orchestrator import DataOrchestrator
-from database.crud_operations import articulo_crud, historial_crud, ultimo_precio_crud
+from database.crud_operations import article_crud, price_record_crud, last_price_crud
 import logging
 from schemas.articles import ArticleCreate
 from decimal import Decimal
@@ -35,11 +35,11 @@ class MasterOrchestrator:
                 article = product_to_articlecreate(item)
                 article_dict = product_to_db_dict(item)
            
-                if not articulo_crud.exists_by_rtr_id(article.rtr_id):
+                if not article_crud.exists_by_rtr_id(article.rtr_id):
                     logger.info('New Article in DB')                   
-                    articulo_crud.insert_one_with_price(article_dict)
+                    article_crud.insert_one_with_price(article_dict)
                 
-                if historial_crud.exists_for_date(article_dict['rtr_id'], article_dict['precio']):
+                if price_record_crud.exists_for_date(article_dict['rtr_id'], article_dict['precio']):
                     logger.info('Price already updated')
                     continue
 
@@ -49,8 +49,8 @@ class MasterOrchestrator:
                     "fecha" : article.price_date
 
                 }
-                historial_crud.insert_one(data_to_update)
-                ultimo_precio_crud.upsert_ultimo_precio(data_to_update['rtr_id'], data_to_update['precio'])
+                price_record_crud.insert_one(data_to_update)
+                last_price_crud.upsert_ultimo_precio(data_to_update['rtr_id'], data_to_update['precio'])
             except Exception as e:
                 logger.warning(f"Invalid data structure skipped: {item}")
         
@@ -64,9 +64,9 @@ class MasterOrchestrator:
             try:
                 article = product_to_articlecreate(item)
                 article_dict = article.model_dump()
-                if not articulo_crud.exists_by_rtr_id(article.rtr_id):
-                    articulo_crud.insert_one(article_dict)
-                articulo_crud.update_one(article.rtr_id, article_dict)
+                if not article_crud.exists_by_rtr_id(article.rtr_id):
+                    article_crud.insert_one(article_dict)
+                article_crud.update_one(article.rtr_id, article_dict)
             except Exception as e:
                 logger.warning(f"Invalid data structure skipped: {item} ({e})")
 

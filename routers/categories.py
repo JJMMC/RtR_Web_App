@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from typing import List
-from database.crud_operations import articulo_crud
+from database.crud_operations import article_crud
 
 
 
@@ -14,7 +14,7 @@ router = APIRouter(
 def get_categories():
     """Obtener todos las Categorías"""
     try:
-        categories = articulo_crud.get_all_categories()
+        categories = article_crud.get_all_categories()
         return categories
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving articles: {str(e)}")
