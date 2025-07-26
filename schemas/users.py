@@ -13,7 +13,7 @@ class UserBase(BaseModel):
     surname: Optional[str] = Field(None, min_length=1, max_length=255)
     email: str = Field(..., min_length=1, max_length=100)
     
-    is_active: bool = Field(default=False)
+    is_active: Optional[bool] = Field(default=True)
     role: str = Field(..., min_length=1, max_length=255)
     
 class UserCreate(UserBase):   

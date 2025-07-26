@@ -2,7 +2,7 @@ from typing import List, Dict, Any, Optional, Sequence
 from sqlalchemy import insert, select, and_, update, func
 from sqlalchemy.orm import joinedload 
 from .crud_base import CRUDOperations
-from .db_models import Article, PriceRecord, LastPrice
+from .db_models import Article, PriceRecord, LastPrice, User
 from .db_session import db_manager
 from datetime import date
 from decimal import Decimal
@@ -357,10 +357,75 @@ class AnalyticsCRUD(CRUDOperations):
 
 
 class UserCRUD(CRUDOperations):
-    pass
+    """Operaciones CRUD Básicas para artículos"""
 
+    def insert_user(self, user_data: Dict[str, Any]):
+        with self.get_session() as session:
+            logger.info(f"Inserting user: {user_data.get('name', 'Unknown')}")
+            new_user = User(**user_data) 
+            session.add(new_user)
+            session.commit()
+            return True
 
+    def get_user_by_email (self, email: str):
+        with self.get_session() as session:
+            logger.info(f"Getting user by email")
+            result_user = select(User).where(User.email == email)
+            return session.execute(result_user).scalar_one_or_none()
+    
+    def get_user_by_usr_name (self, user_name: str):
+        with self.get_session() as session:
+            logger.info(f"Getting user by user_name")
+            result_user = select(User).where(User.user_name == user_name)
+            return session.execute(result_user).scalar_one_or_none()
 
+    def get_user_by_id (self, user_id: int):
+        with self.get_session() as session:
+            logger.info(f"Getting user by id")
+            result_user = select(User).where(User.id == user_id)
+            return session.execute(result_user).scalar_one_or_none()
+
+    def update_user_by_id (self, user_id,  data_to_update: Dict[str, Any]):
+        with self.get_session() as session:
+            logger.info(f"Inserting article: {data_to_update.get('name', 'Unknown')}")
+            
+            # User exists?
+            exists = session.execute(
+                select(User).where(User.id == user_id)
+            ).scalar_one_or_none()
+            if not exists:
+                raise Exception(f"User with id {user_id} not found")
+            
+            # Updating data:
+            session.execute(
+                update(User)
+                .where(User.id == user_id)
+                .values(data_to_update))
+
+            # Commit
+            session.commit()
+
+            # Return data from DB
+            updated_user = session.execute(
+                select(User).where(User.id == user_id)
+            ).scalar_one()
+            return updated_user
+
+    def delete_user(self, user_id: int):
+        with self.get_session() as session:
+ 
+            # User exists?
+            user = session.execute(
+                select(User).where(User.id == user_id)
+            ).scalar_one_or_none()
+            if not user:
+                raise Exception(f"User with id {user_id} not found")
+            
+            logger.info(f"Deleting User: {user.user_name}")
+
+            session.delete(user)
+            session.commit()
+            return True
 
 # Instancias globales para usar en funciones independientes
 article_crud = ArticleCRUD(db_manager)

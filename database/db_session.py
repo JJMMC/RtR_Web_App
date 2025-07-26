@@ -45,4 +45,6 @@ class DatabaseManager:
 # Instancia global del database manager
 db_manager = DatabaseManager()
 
-
+if __name__ == "__main__":
+    #db_manager.create_tables()
+    pass
