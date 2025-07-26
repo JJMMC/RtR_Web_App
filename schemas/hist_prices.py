@@ -6,8 +6,8 @@ from decimal import Decimal
 
 # Schema base para PriceRecord (SIN rtr_id redundante)
 class PriceRecordBase(BaseModel):
-    precio: Decimal = Field(..., ge=0, description="Precio debe ser mayor o igual a 0")
-    fecha: date
+    price: Decimal = Field(..., ge=0, description="Precio debe ser mayor o igual a 0")
+    record_date: date
 
 # Schema para respuesta de PriceRecord (SIN rtr_id redundante)
 class PriceRecordResponse(PriceRecordBase):
@@ -16,7 +16,7 @@ class PriceRecordResponse(PriceRecordBase):
 
 # Schema para crear precios (requiere que el artículo ya exista)
 class PriceRecordCreate(BaseModel):
-    precio: Decimal = Field(..., ge=0, description="Precio del producto")
-    fecha: date = Field(default_factory=date.today, description="Fecha del precio")
+    price: Decimal = Field(..., ge=0, description="Precio del producto")
+    record_date: date = Field(default_factory=date.today, description="Fecha del precio")
     
     # Nota: rtr_id se tomará del artículo al que se asocia el precio

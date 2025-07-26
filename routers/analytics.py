@@ -18,7 +18,7 @@ router = APIRouter(
 
 #### ANALITYCS STATS
 
-@router.get("/categories", response_model=List[schemas.analytics.CategoriaStatsResponse])
+@router.get("/categories", response_model=List[schemas.analytics.CategoryStatsResponse])
 def get_categories_stats():
     categories_stats = analytics_crud.get_all_categories_stats()
     if not categories_stats:
@@ -30,7 +30,7 @@ def get_categories_stats():
     return categories_stats
 
 
-@router.get("/category/{category}", response_model=schemas.analytics.CategoriaStatsResponse)
+@router.get("/category/{category}", response_model=schemas.analytics.CategoryStatsResponse)
 def get_category_stats(category: str):
     category_stats = analytics_crud.get_category_stats(category)
     if not category_stats:

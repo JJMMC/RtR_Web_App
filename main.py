@@ -16,7 +16,7 @@ app.include_router(categories.router)
 app.include_router(analytics.router)
 
 
-@app.get("/")
+@app.get("/", tags=["Index"])
 def index():
     print('Index page')
     return {'message': 'Index page'}

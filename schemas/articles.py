@@ -17,12 +17,12 @@ class ArticleBase(BaseModel):
 # Schema para crear artículos (puede incluir precio inicial)
 class ArticleCreateOptionalPrice(ArticleBase):
     price: Optional[Decimal] = Field(None, ge=0, description="Precio inicial del producto")
-    price_date: Optional[date] = Field(None, description="Fecha del precio inicial")
+    record_date: Optional[date] = Field(None, description="Fecha del precio inicial")
 
 # Schema para crear artículo CON precio inicial (más conveniente)
 class ArticleCreate(ArticleBase):
     price: Decimal = Field(..., ge=0, description="Precio inicial obligatorio")
-    price_date: date = Field(default_factory=date.today, description="Fecha del precio inicial")
+    record_date: date = Field(default_factory=date.today, description="Fecha del precio inicial")
 
 # Schema para actualizar artículos (nuevo)
 class ArticleUpdate(BaseModel):
@@ -39,7 +39,7 @@ class ArticleResponse(ArticleBase):
 
 # Schema para la respuesta completa de artículo con historial
 class ArticleFullData(ArticleResponse):
-    price_history: List[PriceRecordResponse] = Field(default_factory=list)
+    price_records: List[PriceRecordResponse] = Field(default_factory=list)
     updated_price: Optional[LastPriceResponse]
     
     model_config = ConfigDict(from_attributes=True)

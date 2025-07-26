@@ -7,30 +7,30 @@ from .articles import ArticleResponse
 
 # Schema RESPONSE para estadísticas de precios (nuevo)
 class PriceStats(BaseModel):
-    precio_actual: Optional[Decimal] = None
-    precio_minimo: Optional[Decimal] = None
-    precio_maximo: Optional[Decimal] = None
-    precio_promedio: Optional[Decimal] = None
-    total_registros: int = 0
-    fecha_primer_precio: Optional[date] = None
-    fecha_ultimo_precio: Optional[date] = None
+    actual_price: Optional[Decimal] = None
+    min_price: Optional[Decimal] = None
+    max_price: Optional[Decimal] = None
+    avg_price: Optional[Decimal] = None
+    total_records: int = 0
+    first_price_date: Optional[date] = None
+    last_price_date: Optional[date] = None
 
 
 
 # Schema para Stats básicos de todas las categorías
-class CategoriaStatsResponse(BaseModel):
-    categoria: str                    # Nombre de la categoría
-    total_productos: int             # Cuántos productos tiene
-    precio_promedio: Decimal         # Precio medio de productos en la categoría
-    precio_minimo: Decimal           # Producto más barato
-    precio_maximo: Decimal           # Producto más caro
-    ultima_actualizacion: date       # Última vez que se actualizó algún precio
+class CategoryStatsResponse(BaseModel):
+    category: str                    # Nombre de la categoría
+    total_products: int             # Cuántos productos tiene
+    avg_price: Decimal         # Precio medio de productos en la categoría
+    min_price: Decimal           # Producto más barato
+    max_price: Decimal           # Producto más caro
+    last_update: date       # Última vez que se actualizó algún precio
 
 
 
 # Schema para respuesta con estadísticas (nuevo)
-class ArticuloWithStats(ArticleResponse):
-    estadisticas: Optional[PriceStats] = None
+class ArticleWithStats(ArticleResponse):
+    statistics: Optional[PriceStats] = None
     model_config = ConfigDict(from_attributes=True)
 
 # Schema para respuestas de operaciones (nuevo)

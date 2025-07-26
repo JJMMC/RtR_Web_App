@@ -5,8 +5,8 @@ from .hist_prices import PriceRecordResponse
 
 class LastPriceBase(BaseModel):
     rtr_id: int
-    precio: Decimal
-    fecha: date
+    price: Decimal
+    record_date: date
 
 class LastPriceCreate(LastPriceBase):
     pass

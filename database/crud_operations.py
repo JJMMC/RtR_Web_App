@@ -301,45 +301,43 @@ class AnalyticsCRUD(CRUDOperations):
             query = (
                 select(
                     Article.category, # CAMPO 1: La categoría (por la que vamos a agrupar)
-                    func.count(Article.id).label('total_productos'), # AGREGACIÓN 1: Contar cuántos productos hay por categoría
-                    func.avg(LastPrice.price).label('precio_promedio'), # AGREGACIÓN 2: Calcular el precio promedio por categoría
-                    func.min(LastPrice.price).label('precio_minimo'), # AGREGACIÓN 3: Encontrar el precio MÁS BARATO por categoría
-                    func.max(LastPrice.price).label('precio_maximo'), # AGREGACIÓN 4: Encontrar el precio MÁS CARO por categoría
-                    func.max(LastPrice.record_date).label('fecha_ultimo_precio') # AGREGACIÓN 5: Encontrar la última fecha de esa categoría
+                    func.count(func.distinct(Article.id)).label('total_products'), # AGREGACIÓN 1: Contar cuántos productos hay por categoría
+                    func.avg(PriceRecord.price).label('avg_price'), # AGREGACIÓN 2: Calcular el precio promedio por categoría
+                    func.min(PriceRecord.price).label('min_price'), # AGREGACIÓN 3: Encontrar el precio MÁS BARATO por categoría
+                    func.max(PriceRecord.price).label('max_price'), # AGREGACIÓN 4: Encontrar el precio MÁS CARO por categoría
+                    func.max(PriceRecord.record_date).label('last_update') # AGREGACIÓN 5: Encontrar la última fecha de esa categoría
                 )
-                .join(LastPrice, Article.rtr_id == LastPrice.rtr_id) # UNIR LAS TABLAS: Conectar artículos con sus últimos precios
+                .join(PriceRecord, Article.rtr_id == PriceRecord.rtr_id) # UNIR LAS TABLAS: Conectar artículos con sus últimos precios
                 .group_by(Article.category) # GROUP BY: Agrupar por categoría Con esto obtenemos UNA fila POR CADA categoría
             )
             
             results = session.execute(query).all()
-            
-            # Convertir a lista de diccionarios
             stats = []
             for row in results:
                 stats.append({
                     'category': row.category,
-                    'total_productos': row.total_productos,
-                    'precio_promedio': row.precio_promedio,
-                    'precio_minimo': row.precio_minimo,
-                    'precio_maximo': row.precio_maximo,
-                    'ultima_actualizacion': row.fecha_ultimo_precio
+                    'total_products': row.total_products,
+                    'avg_price': row.avg_price,
+                    'min_price': row.min_price,
+                    'max_price': row.max_price,
+                    'last_update': row.last_update
                 })
             
             return stats
 
-    def get_category_stats(self, category) -> Dict[str, Any]:
+    def get_category_stats(self, given_category) -> Dict[str, Any]:
         with self.get_session() as session:
             query = (
                 select(
                     Article.category,
-                    func.count(Article.id).label('total_productos'),
-                    func.avg(LastPrice.price).label('precio_promedio'),
-                    func.min(LastPrice.price).label('precio_minimo'),
-                    func.max(LastPrice.price).label('precio_maximo'),
-                    func.max(LastPrice.record_date).label('fecha_ultimo_precio')
+                    func.count(func.distinct(Article.id)).label('total_products'),
+                    func.avg(PriceRecord.price).label('avg_price'),
+                    func.min(PriceRecord.price).label('min_price'),
+                    func.max(PriceRecord.price).label('max_price'),
+                    func.max(PriceRecord.record_date).label('last_update')
                 )
-                .join(LastPrice, Article.rtr_id == LastPrice.rtr_id)
-                .where(Article.category == category)
+                .join(PriceRecord, Article.rtr_id == PriceRecord.rtr_id)
+                .where(Article.category == given_category)
                 .group_by(Article.category)  
             )
             
@@ -350,12 +348,12 @@ class AnalyticsCRUD(CRUDOperations):
                 
             return {
                 'category': result.category,
-                'total_productos': result.total_productos,
-                'precio_promedio': result.precio_promedio,
-                'precio_minimo': result.precio_minimo,
-                'precio_maximo': result.precio_maximo,
-                'ultima_actualizacion': result.fecha_ultimo_precio
-            }       
+                'total_products': result.total_products,
+                'avg_price': result.avg_price,
+                'min_price': result.min_price,
+                'max_price': result.max_price,
+                'last_update': result.last_update
+            }
 
 
 
