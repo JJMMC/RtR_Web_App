@@ -356,7 +356,8 @@ class AnalyticsCRUD(CRUDOperations):
             }
 
 
-
+class UserCRUD(CRUDOperations):
+    pass
 
 
 
@@ -366,3 +367,4 @@ article_crud = ArticleCRUD(db_manager)
 price_record_crud = PriceRecordCRUD(db_manager)
 analytics_crud = AnalyticsCRUD(db_manager)
 last_price_crud = LastPriceCRUD(db_manager)
+user_crud = UserCRUD(db_manager)

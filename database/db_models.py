@@ -1,13 +1,13 @@
 from sqlalchemy import create_engine
 from sqlalchemy import ForeignKey
-from sqlalchemy import Date, func, String, Integer, Numeric
+from sqlalchemy import Date, func, String, Integer, Numeric, Boolean, DateTime
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import DeclarativeBase
 from typing import Optional
 from decimal import Decimal
-from datetime import date
+from datetime import date, datetime, timezone
 
 
 
@@ -61,6 +61,15 @@ class LastPrice(Base):
     article: Mapped["Article"] = relationship(back_populates="updated_price")
 
 
+class User(Base):
+    __tablename__ = "users"
 
-
-
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_name: Mapped[str] = mapped_column(String, nullable=False, unique=True)
+    name : Mapped[Optional[str]] = mapped_column(String)
+    surname: Mapped[Optional[str]] = mapped_column(String)
+    email: Mapped[str] = mapped_column(String, nullable=False, unique=True)
+    hashed_password: Mapped[str] = mapped_column(String,nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
+    is_active: Mapped[bool] = mapped_column(Boolean, default=False)
+    role: Mapped[str] = mapped_column(String, default="user")
