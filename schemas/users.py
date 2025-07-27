@@ -26,7 +26,7 @@ class UserUpdate(BaseModel):
     email: Optional[str] = Field(None, min_length=1, max_length=255)
     is_active: Optional[bool] = None
     role: Optional[str] = Field(None, max_length=500)
-    password: Optional[str] = Field(None, min_length=1, max_length=100)
+    #password: Optional[str] = Field(None, min_length=1, max_length=100)
 
 
 class UserLogin(BaseModel):

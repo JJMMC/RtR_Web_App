@@ -32,7 +32,6 @@ def get_user(current_user: dict = Depends(jwt_gen.get_current_user)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving user: {str(e)}")
 
-
 @router.put('/', response_model= UserResponse)
 def update_user(data_to_update: UserUpdate, current_user: dict = Depends(jwt_gen.get_current_user)):
     """Actualizar el usuario actual"""
@@ -44,7 +43,6 @@ def update_user(data_to_update: UserUpdate, current_user: dict = Depends(jwt_gen
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving user: {str(e)}")
-
 
 @router.delete('/', response_model=UserResponse)
 def delete_user(current_user: dict = Depends(jwt_gen.get_current_user)):

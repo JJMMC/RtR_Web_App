@@ -365,7 +365,8 @@ class UserCRUD(CRUDOperations):
             new_user = User(**user_data) 
             session.add(new_user)
             session.commit()
-            return True
+            session.refresh(new_user)
+            return new_user
 
     def get_user_by_email (self, email: str):
         with self.get_session() as session:
