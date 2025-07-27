@@ -411,7 +411,7 @@ class UserCRUD(CRUDOperations):
             ).scalar_one()
             return updated_user
 
-    def delete_user(self, user_id: int):
+    def remove_user_by_id(self, user_id: int):
         with self.get_session() as session:
  
             # User exists?

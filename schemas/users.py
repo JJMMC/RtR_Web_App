@@ -19,6 +19,16 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):   
     password: str = Field(..., min_length=1, max_length=100)
 
+# Schema para actualizar users
+class UserUpdate(BaseModel):
+    name: Optional[str] = Field(None, min_length=1, max_length=100)
+    surname: Optional[str] = Field(None, min_length=1, max_length=255)
+    email: Optional[str] = Field(None, min_length=1, max_length=255)
+    is_active: Optional[bool] = None
+    role: Optional[str] = Field(None, max_length=500)
+    password: Optional[str] = Field(None, min_length=1, max_length=100)
+
+
 class UserLogin(BaseModel):
     email: str = Field(..., min_length=1, max_length=100)
     password: str = Field(..., min_length=1, max_length=100)

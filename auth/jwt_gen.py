@@ -30,11 +30,12 @@ def verify_token(token: str) -> dict:
     
 def get_current_user(token: str = Depends(oauth2_scheme)):
     try:
-        payload = verify_token(token)  # Usa tu función existente
+        payload = verify_token(token)  
         user_name = payload.get("sub")
         user_id = payload.get("user_id")
-        if user_name is None or user_id is None:
+        role = payload.get("role")
+        if user_name is None or user_id is None or role is None:
             raise HTTPException(status_code=401, detail="Token inválido")
-        return {"user_name": user_name, "user_id": user_id}
+        return {"user_name": user_name, "user_id": user_id, "role": role}
     except Exception:
         raise HTTPException(status_code=401, detail="Token inválido o expirado")

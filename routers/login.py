@@ -35,7 +35,11 @@ def login_user(log_form: OAuth2PasswordRequestForm = Depends()):
                 )
         
         # 3.-Preparamos los datos para pasar al jwt_gen
-        log_data = {'sub': user_db.user_name, 'user_id': user_db.id}
+        log_data = {'sub': user_db.user_name,
+                    'user_id': user_db.id,
+                    'role': user_db.role
+                    }
+        
         # 4.-Retornamos el token en formato estándar
         access_token = jwt_gen.create_access_token(log_data)
         return {"access_token": access_token, "token_type": "bearer"}
