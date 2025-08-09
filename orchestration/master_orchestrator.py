@@ -46,7 +46,7 @@ class MasterOrchestrator:
                 data_to_update = {
                     "rtr_id" : article.rtr_id, 
                     "precio" : article.price,
-                    "fecha" : article.price_date
+                    "fecha" : article.record_date
 
                 }
                 price_record_crud.insert_one(data_to_update)
