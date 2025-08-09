@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Productos - RTR Valladolid{% endblock %}
+{% block content %}
+    <h1>Catálogo de Productos</h1>
+
+    <!-- Formulario de búsqueda con HTMX -->
+    <form hx-get="/products/search" hx-target="#product-list" hx-trigger="input delay:400ms, change">
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <input type="text" name="q" class="form-control" placeholder="Buscar por nombre o categoría...">
+            </div>
+        </div>
+    </form>
+
+    <div id="product-list">
+        {% include "partials/product_list.html" %}
+    </div>
+{% endblock %}

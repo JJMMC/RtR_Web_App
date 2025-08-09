@@ -1,0 +1,22 @@
+<div class="row">
+    {% for product in products %}
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            {% if product.img_url %}
+            <img src="{{ product.img_url }}" class="card-img-top img-fluid" style="max-height: 150px; object-fit: contain;">
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title">{{ product.name }}</h5>
+                <p class="card-text">
+                    <strong>Categoría:</strong> {{ product.category }}<br>
+                    <strong>RTR ID:</strong> {{ product.rtr_id }}
+                </p>
+                <a href="{{ product.art_url }}" target="_blank" class="btn btn-primary">Ver Producto</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% if not products %}
+    <div class="alert alert-info">No hay productos disponibles.</div>
+{% endif %}
