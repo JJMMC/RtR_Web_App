@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Detalle - {{ product.name }}{% endblock %}
+{% block content %}
+    <h2>{{ product.name }}</h2>
+    <div class="row">
+        <div class="col-md-4">
+            {% if product.img_url %}
+            <img src="{{ product.img_url }}" class="img-fluid mb-3" style="max-height: 250px; object-fit: contain;">
+            {% endif %}
+            <p><strong>Categoría:</strong> {{ product.category }}</p>
+            <p><strong>RTR ID:</strong> {{ product.rtr_id }}</p>
+            <p><a href="{{ product.art_url }}" target="_blank" class="btn btn-secondary btn-sm">Ver en RTR</a></p>
+        </div>
+        <div class="col-md-8">
+            <h4>Evolución del precio</h4>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Precio (€)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in price_history %}
+                    <tr>
+                        <td>{{ record.record_date }}</td>
+                        <td>{{ record.price }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <a href="/products" class="btn btn-link mt-3">&larr; Volver al catálogo</a>
+{% endblock %}

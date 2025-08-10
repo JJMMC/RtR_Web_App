@@ -1,0 +1,33 @@
+
+<nav class="navbar fixed-top navbar-expand-sm navbar-dark bg-dark">
+    
+    <div class="container">
+    
+        <a href="#" class="navbar-brand mb-0 h1 ms-3">
+            <img class="d-inline-block" width="50" height="50"
+                 src="https://p77-sign-va.tiktokcdn.com/tos-maliva-avt-0068/821cb011440b237363da32d24371f039~tplv-tiktokx-cropcenter:1080:1080.jpeg?dr=10399&refresh_token=db5da0d7&x-expires=1754985600&x-signature=1D%2Byx05dnbS0L%2Fg%2Fz5Su8Id5%2FaU%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=no1a">
+            <span class="ms-2">Analytics</span>
+        </a>
+    
+        <button type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                class="navbar-toggler me-2" aria-controls="navbarNav" aria-expanded="false"
+                aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a href="/" class="nav-link {% if active_page == 'home' %}active text-primary{% endif %}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/products" class="nav-link {% if active_page == 'products' %}active text-primary{% endif %}">Products</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">Week Deals</a>
+                </li>
+            </ul>    
+        </div>
+
+    </div>
+</nav>

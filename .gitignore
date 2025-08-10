@@ -13,3 +13,4 @@ database/db_models_old.py
 rtr_crawler_Alchemy_old.db
 migration2_script.py
 rtr_crawler_Alchemy_test.db
+.vscode

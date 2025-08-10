@@ -231,7 +231,6 @@ class PriceRecordCRUD(CRUDOperations): # Clase para trabajar con la tabla Histor
             session.commit()
             return True
 
-
     def bulk_insert(self, prices_list: List[Dict[str, Any]]) -> int:
         """Insertar múltiples precios de forma eficiente"""
         with self.get_session() as session:
@@ -261,6 +260,16 @@ class PriceRecordCRUD(CRUDOperations): # Clase para trabajar con la tabla Histor
             ).all()
             return [fecha[0] for fecha in results]
 
+    def get_price_history(self, rtr_id: int):
+        """Devuelve la evolución de precios de un artículo por su RTR ID"""
+        with self.get_session() as session:
+            results = session.execute(
+                select(PriceRecord.record_date, PriceRecord.price)
+                .where(PriceRecord.rtr_id == rtr_id)
+                .order_by(PriceRecord.record_date)
+            ).all()
+            # Devuelve una lista de dicts para fácil uso en el template
+            return [{"record_date": r[0].isoformat(), "price": float(r[1])} for r in results]
 
 class LastPriceCRUD(CRUDOperations): # Clase para trabajar con la tabla ultimo precio de la DB
     """Operaciones CRUD específicas para Ultimo Precio"""

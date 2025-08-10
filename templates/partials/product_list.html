@@ -11,7 +11,10 @@
                     <strong>Categoría:</strong> {{ product.category }}<br>
                     <strong>RTR ID:</strong> {{ product.rtr_id }}
                 </p>
-                <a href="{{ product.art_url }}" target="_blank" class="btn btn-primary">Ver Producto</a>
+                <div class="d-flex">
+                    <a href="{{ product.art_url }}" target="_blank" class="btn btn-primary btn-sm me-2" style="opacity:0.7;" >Ver Producto</a>
+                    <a href="/products/{{ product.rtr_id }}" class="btn btn-primary btn-sm" style="opacity:0.7;">Historial Precios</a>
+                </div>
             </div>
         </div>
     </div>
