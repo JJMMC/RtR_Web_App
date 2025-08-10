@@ -137,6 +137,16 @@ class ArticleCRUD(CRUDOperations): # Clase para trabajar con la tabla Artículos
                 logger.error(f"Error getting all articles: {e}")
                 raise  # Propagar el error para que la capa API lo maneje
         # Context manager se encarga del cierre automáticamente
+    
+    def get_active(self) -> List[Article]:
+        """Obtener todos los artículos"""
+        with self.get_session() as session:
+            try:
+                return session.query(Article).filter(Article.status == True).all()
+            except Exception as e:
+                logger.error(f"Error getting all articles: {e}")
+                raise  # Propagar el error para que la capa API lo maneje
+        # Context manager se encarga del cierre automáticamente
 
     def search(self, filters: Dict[str, Any], limit: int = 20) -> Sequence[Article]:
         with self.get_session() as session:
@@ -219,7 +229,6 @@ class ArticleCRUD(CRUDOperations): # Clase para trabajar con la tabla Artículos
         with self.get_session() as session:
             return session.execute(select(Article.category).distinct().where(Article.category.is_not(None))).scalars().all()
 
-
 class PriceRecordCRUD(CRUDOperations): # Clase para trabajar con la tabla Historial-precios de la DB
     """Operaciones CRUD específicas para historial"""
     
@@ -300,11 +309,42 @@ class LastPriceCRUD(CRUDOperations): # Clase para trabajar con la tabla ultimo p
             
             # Guardamos los Cambios
             session.commit()
-
             
 class AnalyticsCRUD(CRUDOperations):
     """Operaciones específicas para analytics y estadísticas"""
-    
+    def get_products_with_price_drop(self):
+        with self.get_session() as session:
+            # 1. Solo artículos activos
+            articles = session.query(Article).filter(Article.status == True).all()
+            result = []
+            for article in articles:
+                # 2. Obtener los dos últimos precios
+                prices = (
+                    session.query(PriceRecord)
+                    .filter(PriceRecord.rtr_id == article.rtr_id)
+                    .order_by(PriceRecord.record_date.desc())
+                    .limit(2)
+                    .all()
+                )
+                if len(prices) == 2:
+                    latest, previous = prices[0], prices[1]
+                    if latest.price < previous.price:
+                        result.append({
+                            "category": article.category,
+                            "name": article.name,
+                            "img_url": article.img_url,
+                            "art_url": article.art_url,
+                            "rtr_id": article.rtr_id,
+                            "price_now": float(latest.price),
+                            "price_before": float(previous.price),
+                            "price_diff": float(previous.price) - float(latest.price),
+                            "record_date_now": latest.record_date,
+                            "record_date_before": previous.record_date,
+                        })
+            # 3. Agrupar por categoría (opcional)
+            # Puedes devolver result tal cual, o agruparlo por categoría si lo prefieres
+            return result
+        
     def get_all_categories_stats(self) -> List[Dict[str, Any]]:
         with self.get_session() as session:
             query = (
@@ -363,7 +403,6 @@ class AnalyticsCRUD(CRUDOperations):
                 'max_price': result.max_price,
                 'last_update': result.last_update
             }
-
 
 class UserCRUD(CRUDOperations):
     """Operaciones CRUD Básicas para artículos"""

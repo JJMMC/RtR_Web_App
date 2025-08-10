@@ -41,6 +41,11 @@ def get_category_stats(category: str):
     #     category_stats.append(analytics_crud.get_all_category_stats())
     return category_stats
 
+@router.get("/test/price-drop")
+def test_price_drop():
+    results = analytics_crud.get_products_with_price_drop()
+    return results
+
 '''
 Posibles analytics:
 

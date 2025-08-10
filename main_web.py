@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from database.crud_operations import article_crud, price_record_crud
+from database.crud_operations import article_crud, price_record_crud, analytics_crud
 
 app = FastAPI()
 
@@ -16,7 +16,7 @@ async def home(request: Request):
 
 @app.get("/products", response_class=HTMLResponse)
 async def products(request: Request):
-    products = article_crud.get_all()  # Obtén los productos de tu backend
+    products = article_crud.get_active()  # Obtén los productos de tu backend
     return templates.TemplateResponse("products.html", {
         "request": request,
         "products": products,
@@ -26,9 +26,9 @@ async def products(request: Request):
 @app.get("/products/search", response_class=HTMLResponse)
 async def search_products(request: Request, q: str = ""):
     if q:
-        filtered = [p for p in article_crud.get_all() if q.lower() in p.name.lower() or q.lower() in p.category.lower()]
+        filtered = [p for p in article_crud.get_active() if q.lower() in p.name.lower() or q.lower() in p.category.lower()]
     else:
-        filtered = article_crud.get_all()
+        filtered = article_crud.get_active()
     return templates.TemplateResponse("partials/product_list.html", {
         "request": request,
         "products": filtered,
@@ -47,4 +47,13 @@ async def product_detail(request: Request, rtr_id: int):
         "product": product,
         "price_history": price_history,
         "active_page": "products"
+    })
+
+
+@app.get("/price-drop", response_class=HTMLResponse)
+def price_drop(request: Request):
+    products = analytics_crud.get_products_with_price_drop()
+    return templates.TemplateResponse("price_drop.html", {
+        "request": request,
+        "products": products
     })

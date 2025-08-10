@@ -29,6 +29,7 @@ class Article(Base):
     ean: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     art_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     img_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    status: Mapped[bool] = mapped_column(Boolean, default=True)
     
     # Relación con price_record
     price_records: Mapped[list["PriceRecord"]] = relationship(back_populates="article")

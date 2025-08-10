@@ -1,7 +1,29 @@
 {% extends "base.html" %}
 {% block title %}Inicio - RTR Valladolid{% endblock %}
 {% block content %}
-    <h1>Bienvenido a RTR Valladolid</h1>
-    <p class="lead">Tu tienda de recambios para crawler</p>
-    <a href="/products" class="btn btn-primary">Ver productos</a>
+<div class="container">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-8 text-center">
+            <h1 class="mb-4">Bienvenido a RTR Valladolid</h1>
+            <p class="lead">
+                Consulta el catálogo actualizado de productos, sigue la evolución de precios y descubre las mejores ofertas semanales de tu tienda favorita.
+            </p>
+            <div class="my-4">
+                <a href="/products" class="btn btn-primary btn-lg me-3">Ver Catálogo</a>
+                <a href="/price-drop" class="btn btn-success btn-lg">Ofertas de la Semana</a>
+            </div>
+        </div>
+    </div>
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-10">
+            <h3>¿Qué puedes hacer aquí?</h3>
+            <ul class="list-group list-group-flush text-start">
+                <li class="list-group-item">🔍 Buscar productos por nombre o categoría.</li>
+                <li class="list-group-item">📉 Ver la evolución histórica de precios de cada producto.</li>
+                <li class="list-group-item">💡 Descubrir qué productos han bajado de precio recientemente.</li>
+                <li class="list-group-item">📦 Consultar solo productos activos y disponibles.</li>
+            </ul>
+        </div>
+    </div>
+</div>
 {% endblock %}

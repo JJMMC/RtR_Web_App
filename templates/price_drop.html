@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Bajada de precios - RTR Valladolid{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="row align-items-center mb-4">
+        <div class="col">
+            <h1 class="mt-5">Bajada de precios</h1>
+        </div>
+    </div>
+
+    {% if products %}
+        <div class="row">
+            {% for product in products %}
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    {% if product.img_url %}
+                    <img src="{{ product.img_url }}" class="card-img-top img-fluid" style="max-height: 150px; object-fit: contain;">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ product.name }}</h5>
+                        <p class="card-text">
+                            <strong>Categoría:</strong> {{ product.category }}<br>
+                            <strong>Precio anterior:</strong> {{ product.price_before }} €<br>
+                            <strong>Precio actual:</strong> {{ product.price_now }} €<br>
+                            <strong>Diferencia:</strong> <span class="text-success">-{{ product.price_diff | round(2)}} €</span>
+                        </p>
+                        <div class="d-flex">
+                            <a href="{{ product.art_url }}" target="_blank" class="btn btn-primary btn-sm me-2" style="opacity:0.7;" >Ver Producto</a>
+                            <a href="/products/{{ product.rtr_id }}" class="btn btn-primary btn-sm" style="opacity:0.7;">Historial Precios</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">No hay productos con bajada de precio.</div>
+    {% endif %}
+</div>
+{% endblock %}
